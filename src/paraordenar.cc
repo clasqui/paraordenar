@@ -15,20 +15,27 @@
 #include <CLI11.hpp>
 #include <boost/filesystem.hpp>
 
+#include "storage.hpp"
+#include "types.h"
+
 using namespace std;
 
 /* 2 defines */
-#define CONFIG_PATH "%s/.config/paraordenar"
+#define CONFIG_PATH "/.config/paraordenar"
 
 /* 3 external declarations */
 /* 4 typedefs */
 /* 5 global variable declarations */
 
-std::string storagepath;
+std::string paraordenar_dir;
+Storage *mstr;
 
 /* 6 function prototypes */
 bool pathExists(const std::string &s);
 string creaEmmagatzematge();
+
+void app_command(CLI::App *comm);
+void ls_command(CLI::App *comm); 
 
 int main(int argc, char **argv) {
 /* 7 command-line parsing */
@@ -41,18 +48,15 @@ int main(int argc, char **argv) {
     CLI::App *llista = app.add_subcommand("llista", "Llista els elements de l'entorn actual");
     app.require_subcommand(1);  // 1 subcomanda requerida
 
-    CLI11_PARSE(app, argc, argv);
 
     std::fstream storageconfig;
     char *homepath = getenv("HOME");
-    char buff[136], paraordenar_dir[128];
-    sprintf(paraordenar_dir, CONFIG_PATH , homepath);
+    string buff;
+    paraordenar_dir = string(homepath)+string(CONFIG_PATH);
     if(!pathExists(paraordenar_dir)) {
         boost::filesystem::create_directory(paraordenar_dir);
     }
-    sprintf(buff, "%s/storage", paraordenar_dir);
-
-
+    buff = paraordenar_dir + "/storage";
     if(!pathExists(buff)) {
         storageconfig.open(buff, ios::out);
         cout << "Benvingut a ParaOrdenar! No tens definit cap emmagatzematge." << endl;
@@ -69,24 +73,67 @@ int main(int argc, char **argv) {
     }
 
 
+    string mainstoragepath;
     std::string line;
     while (std::getline(storageconfig, line))
     {
-       storagepath = line; 
-       if(storagepath.length() == 0) {
-           std::cout << "Emmagatzematge no especificat. Indiqueu-lo a ~/.paraordenar/storage." << std::endl;
-       } else {
-           std::cout << storagepath << endl;;
-       }
+       mainstoragepath = line; 
+       if(mainstoragepath.length() == 0) {
+           std::cout << "Emmagatzematge no especificat. Indiqueu-lo a ~/.config/paraordenar/storage." << std::endl;
+           exit(0);
+       } 
+       break;
     }
 
     storageconfig.close();
 
+    try {
+        mstr = new Storage(mainstoragepath);
+    } catch(ExceptionType &e) {
+        cout << "Error: ";
+        switch (e) {
+            case ExceptionType::EStorageNotExists:
+            cout << "L'arxiu de configuracio de l'emmagatzematge no existeix." << endl;
+            break;
+            case ExceptionType::EMalformedStorage:
+                  cout << "L'arxiu de configuracio de l'emmagatzematge esta trencat." << endl;
+            break;
+            case ExceptionType::ENoStorage:
+            break;
+        }
+        exit(1);
+    }
+
+    CLI11_PARSE(app, argc, argv);
+
+    for(auto subcom : app.get_subcommands()) {
+        string nom = subcom->get_name();
+        if(nom == "app") app_command(subcom);
+        if(nom == "llista") ls_command(subcom);
+    }
 
     return 0;
 }
 
 /* 8 function declarations */
+
+void app_command(CLI::App *comm) {
+    cout << comm->get_name();
+
+    return;
+}
+
+void ls_command(CLI::App *comm) {
+
+    return;
+}
+
+void read_global_state(string &app, string &vault) {
+    if(boost::filesystem::exists(paraordenar_dir+"/state"))  {
+        fstream state_file(paraordenar_dir+"/state", ios::in);
+        std::string line;
+    }
+}
 
 string creaEmmagatzematge() {
     string path;
