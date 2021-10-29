@@ -1,5 +1,5 @@
-#ifndef HPP_STORAGE_DEF
-#define HPP_STORAGE_DEF
+#pragma once
+
 /* storage.hpp */
 /**
  * ParaOrdenar
@@ -29,4 +29,3 @@ class Storage {
 };
 
 
-#endif
