@@ -16,11 +16,15 @@
 Storage::Storage(string path) {
     // Check if exists
     if(!boost::filesystem::exists(path)) {
-        throw PROException(ExceptionType::EStorageNotExists, "No existeix el path");
+        throw PROException(ExceptionType::ENoPath, "No existeix el path");
     }
 
     this->storage_path = path;
     
+    if(!boost::filesystem::exists(path+"/.prostorage")) {
+        throw PROException(ExceptionType::EStorageNotExists, "No existeix un emmagatzematge inicialitzat al directori definit.");
+    }
+
     this->storage_file.open(path+"/.prostorage", ios::in | ios::out);
     
     /* CODI PER TREBALLAR AMB FITXERS TAL CUAL
@@ -33,9 +37,26 @@ Storage::Storage(string path) {
     }
     */
 
-    result = doc.load(storage_file);
+    pugi::xml_parse_result result = doc.load(storage_file);
     if(!result) throw PROException(ExceptionType::EXMLParseError, result.description());
 
+}
+
+Storage::Storage() {
+    storage_path = "";
+    // storage_file = NULL;
+
+    pugi::xml_node root = doc.append_child("paraordenar");
+    pugi::xml_node config_type = root.append_child("param");
+    config_type.append_attribute("name") = "tipus";
+    config_type.append_attribute("type") = "string";
+    config_type.append_attribute("value") = "StorageDefinition";
+
+    pugi::xml_node config_version = root.append_child("param");
+    config_version.append_attribute("name") = "versio";
+    config_version.append_attribute("type") = "string";
+    config_version.append_attribute("value") = "0.1";
+    
 }
 
 Storage::~Storage() {
@@ -44,4 +65,21 @@ Storage::~Storage() {
     
 string Storage::get_path() {
     return this->storage_path;
+}
+
+void Storage::init_path(string path) {
+    if(!boost::filesystem::exists(path)) {
+        throw PROException(ExceptionType::ENoPath, "No existeix el path");
+    }
+
+    fstream tmp_storagefile;
+    tmp_storagefile.open(path+"./.prostorage", ios::out); 
+    doc.save(tmp_storagefile);
+    tmp_storagefile.close();
+
+    this->storage_file.open(path+"/.prostorage", ios::in | ios::out);
+
+    pugi::xml_parse_result result = doc.load(storage_file);
+    if(!result) throw PROException(ExceptionType::EXMLParseError, result.description());
+
 }

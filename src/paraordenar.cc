@@ -121,10 +121,10 @@ void ls_command(CLI::App *comm) {
     return;
 }
 
-void read_global_state(string &app, string &vault) {
-    if(boost::filesystem::exists(paraordenar_dir+"/state"))  {
-        fstream state_file(paraordenar_dir+"/state", ios::in);
-        std::string line;
+void read_global_state(int &app, int &vault) {
+    if(boost::filesystem::exists(paraordenar_dir+"/app"))  {
+        fstream app_state_file(paraordenar_dir+"/app", ios::in);
+        
     }
 }
 
@@ -132,15 +132,13 @@ string creaEmmagatzematge() {
     string path;
     cout << "Indica el camí on vols inicialitzar l'emmagatzematge: " << endl << "> " ;
     cin >> path;
-    fstream tmp_storagefile;
-    string path_storage = path;
-    path.append("/.prostorage");
-    tmp_storagefile.open(path, ios::out); 
-    tmp_storagefile << "paraordenar_storage_definition" << endl;
-    tmp_storagefile.close();
-    cout << "Emmagatzematge buit creat a " << path_storage << endl;
 
-    return path_storage;
+    mstr = new Storage();
+    mstr->init_path(path);
+
+    cout << "Emmagatzematge buit creat a " << path << endl;
+
+    return path;
 }
 
 bool pathExists(const std::string &s)

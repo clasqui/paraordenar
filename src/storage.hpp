@@ -23,14 +23,28 @@ class Storage {
     fstream storage_file;
 
     pugi::xml_document doc;
-    pugi::xml_parse_result result;
 
     public:
+        /**
+            Constructor: Quan ja existeix emmagatzematge
+        */
         Storage (string);
+
+        /**
+            Constructor: Crear emmagatzematge buit
+            Si s'inicialitza amb aquest constructor, cal cridar
+            la funcio "init_path" en algun moment
+        */
+        Storage (); 
+
+        /**
+            Destructor: guarda xml al fitxer i tanca.
+        */
         ~Storage ();
         
         string get_path();
         void get_apps();
+        void init_path(string);
 
 };
 

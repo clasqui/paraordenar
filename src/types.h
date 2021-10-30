@@ -1,6 +1,6 @@
 
 enum struct ExceptionType { 
-    ENoStorage, 
+    ENoPath, 
     EStorageNotExists, 
     EMalformedStorage,
     EXMLParseError,
