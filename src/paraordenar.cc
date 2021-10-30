@@ -90,7 +90,8 @@ int main(int argc, char **argv) {
     try {
         mstr = new Storage(mainstoragepath);
     } catch(PROException &e) {
-        cout << "Error: " << e.message << endl;
+        cout << "Error en carregar l'emmagatzematge: " << endl;
+        cout << "  -> " << e.message << endl;
         exit(1);
     }
 

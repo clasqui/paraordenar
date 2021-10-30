@@ -2,7 +2,9 @@
 enum struct ExceptionType { 
     ENoStorage, 
     EStorageNotExists, 
-    EMalformedStorage 
+    EMalformedStorage,
+    EXMLParseError,
+    EMemoryError
 };
 
 struct PROException {
