@@ -23,6 +23,8 @@ class Storage {
 
     public:
         Storage (string);
+        ~Storage ();
+        
         string get_path();
         void get_apps();
 

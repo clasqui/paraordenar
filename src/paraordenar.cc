@@ -89,18 +89,8 @@ int main(int argc, char **argv) {
 
     try {
         mstr = new Storage(mainstoragepath);
-    } catch(ExceptionType &e) {
-        cout << "Error: ";
-        switch (e) {
-            case ExceptionType::EStorageNotExists:
-            cout << "L'arxiu de configuracio de l'emmagatzematge no existeix." << endl;
-            break;
-            case ExceptionType::EMalformedStorage:
-                  cout << "L'arxiu de configuracio de l'emmagatzematge esta trencat." << endl;
-            break;
-            case ExceptionType::ENoStorage:
-            break;
-        }
+    } catch(PROException &e) {
+        cout << "Error: " << e.message << endl;
         exit(1);
     }
 
@@ -111,6 +101,8 @@ int main(int argc, char **argv) {
         if(nom == "app") app_command(subcom);
         if(nom == "llista") ls_command(subcom);
     }
+
+    delete mstr;
 
     return 0;
 }

@@ -15,7 +15,7 @@
 Storage::Storage(string path) {
     // Check if exists
     if(!boost::filesystem::exists(path)) {
-        throw ExceptionType::EStorageNotExists;
+        throw PROException(ExceptionType::EStorageNotExists, "No existeix el path");
     }
 
     this->storage_path = path;
@@ -25,9 +25,13 @@ Storage::Storage(string path) {
     string firstline;
     getline(storage_file, firstline);
     if(firstline!="paraordenar_storage_definition") {
-        throw ExceptionType::EMalformedStorage;
+        throw PROException(ExceptionType::EMalformedStorage, "Malformed Storage");
     }
 
+}
+
+Storage::~Storage() {
+    storage_file.close();
 }
     
 string Storage::get_path() {
