@@ -25,7 +25,7 @@ Storage::Storage(string path) {
         throw PROException(ExceptionType::EStorageNotExists, "No existeix un emmagatzematge inicialitzat al directori definit.");
     }
 
-    this->storage_file.open(path+"/.prostorage", ios::in | ios::out);
+    this->storage_file.open(path+"/.prostorage", ios::in);
     
     /* CODI PER TREBALLAR AMB FITXERS TAL CUAL
 
@@ -39,6 +39,8 @@ Storage::Storage(string path) {
 
     pugi::xml_parse_result result = doc.load(storage_file);
     if(!result) throw PROException(ExceptionType::EXMLParseError, result.description());
+
+    storage_file.close();
 
 }
 
@@ -56,10 +58,15 @@ Storage::Storage() {
     config_version.append_attribute("name") = "versio";
     config_version.append_attribute("type") = "string";
     config_version.append_attribute("value") = "0.1";
+
+    /*pugi::xml_node apps_node =*/ root.append_child("apps");
     
 }
 
 Storage::~Storage() {
+    storage_file.open(storage_path+"./.prostorage", ios::out | ios::trunc); 
+    doc.save(storage_file);
+
     storage_file.close();
 }
     
@@ -71,15 +78,17 @@ void Storage::init_path(string path) {
     if(!boost::filesystem::exists(path)) {
         throw PROException(ExceptionType::ENoPath, "No existeix el path");
     }
+    this->storage_path = path;
 
     fstream tmp_storagefile;
-    tmp_storagefile.open(path+"./.prostorage", ios::out); 
+    tmp_storagefile.open(path+"./.prostorage", ios::out | ios::trunc); 
     doc.save(tmp_storagefile);
     tmp_storagefile.close();
 
-    this->storage_file.open(path+"/.prostorage", ios::in | ios::out);
+    this->storage_file.open(path+"/.prostorage", ios::in);
 
     pugi::xml_parse_result result = doc.load(storage_file);
     if(!result) throw PROException(ExceptionType::EXMLParseError, result.description());
+    storage_file.close();
 
 }

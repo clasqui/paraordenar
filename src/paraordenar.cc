@@ -36,6 +36,9 @@ string creaEmmagatzematge();
 
 void app_command(CLI::App *comm);
 void ls_command(CLI::App *comm); 
+void crea_command(CLI::App *comm);
+
+void read_global_state(int *, int *);
 
 int main(int argc, char **argv) {
 /* 7 command-line parsing */
@@ -101,6 +104,7 @@ int main(int argc, char **argv) {
         string nom = subcom->get_name();
         if(nom == "app") app_command(subcom);
         if(nom == "llista") ls_command(subcom);
+        if(nom == "crea") crea_command(subcom);
     }
 
     delete mstr;
@@ -118,14 +122,58 @@ void app_command(CLI::App *comm) {
 
 void ls_command(CLI::App *comm) {
 
+    int c_app, c_vault;
+    read_global_state(&c_app, &c_vault);
+    cout << "Current app: " << to_string(c_app) << endl;
+
     return;
 }
 
-void read_global_state(int &app, int &vault) {
+void crea_command(CLI::App *comm) {
+    // Tanquem emmagatzematge actual
+    delete mstr;
+
+    std::fstream storageconfig;
+    storageconfig.open(paraordenar_dir+"/storage", ios::out);
+
+    string tmp_storagedir = creaEmmagatzematge();
+    storageconfig << tmp_storagedir << endl;
+
+    storageconfig.close();
+
+}
+
+void read_global_state(int *app, int *vault) {
     if(boost::filesystem::exists(paraordenar_dir+"/app"))  {
-        fstream app_state_file(paraordenar_dir+"/app", ios::in);
-        
+         // C++ Way: no funciona 
+        fstream app_state_file(paraordenar_dir+"/app", ios::in | ios::binary);
+        int app_id;
+        app_state_file.read(reinterpret_cast<char*>(&app_id), sizeof(app_id));
+        *app = app_id;
+        // Provem a l'estil de C 
+
+    } else {
+        fstream app_state_file(paraordenar_dir+"/app", ios::out | ios::binary);
+        int no_app = -1;
+        app_state_file.write(reinterpret_cast<char*>(&no_app), sizeof(no_app));
+        app_state_file.close();
+        *app = no_app;
     }
+
+    if(boost::filesystem::exists(paraordenar_dir+"/vault"))  {
+        fstream vault_state_file(paraordenar_dir+"/vault", ios::in | ios::binary);
+        int vault_id;
+        vault_state_file.read(reinterpret_cast<char*>(&vault_id), sizeof(vault_id));
+        *vault = vault_id;
+    } else {
+        fstream vault_state_file(paraordenar_dir+"/vault", ios::out | ios::binary);
+        int no_vault = -1;
+        vault_state_file.write(reinterpret_cast<char*>(&no_vault), sizeof(no_vault));
+        vault_state_file.close();
+        *vault = no_vault;
+    }
+
+    return;
 }
 
 string creaEmmagatzematge() {
