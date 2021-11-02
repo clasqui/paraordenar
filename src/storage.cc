@@ -57,7 +57,7 @@ Storage::Storage() {
     pugi::xml_node config_version = root.append_child("param");
     config_version.append_attribute("name") = "versio";
     config_version.append_attribute("type") = "string";
-    config_version.append_attribute("value") = "0.1";
+    config_version.append_attribute("value") = PARAORDENAR_VERSION;
 
     /*pugi::xml_node apps_node =*/ root.append_child("apps");
     

@@ -34,7 +34,7 @@ Storage *mstr;
 bool pathExists(const std::string &s);
 string creaEmmagatzematge();
 
-void app_command(CLI::App *comm);
+void app_command(CLI::App *comm, string *app_name);
 void ls_command(CLI::App *comm); 
 void crea_command(CLI::App *comm);
 
@@ -44,11 +44,21 @@ int main(int argc, char **argv) {
 /* 7 command-line parsing */
 
     CLI::App app{"ParaOrdenar - Eina d'emmagatzematge i gestió de traces Paraver"};
+    app.set_version_flag("--version", string(PARAORDENAR_VERSION), "Mostra la informació de versió i acaba.");
+    app.set_help_all_flag("--help-all", "Mostra l'ajuda completa");
     
     // CLI::App *init = app.add_subcommand("init", "Inicialitza un entorn paraordenar al directori actual");
-    CLI::App *proj = app.add_subcommand("app", "Crea, gestiona o mou-te a una aplicació");
-    CLI::App *crea = app.add_subcommand("crea", "Crea un element");
-    CLI::App *llista = app.add_subcommand("llista", "Llista els elements de l'entorn actual");
+    CLI::App *proj = app.add_subcommand("app", "Crea, gestiona o mou-te a una aplicació/projecte");
+    string app_name;
+    proj->add_option("app_name", app_name, "Nom del projecte")->required();
+    auto crea_group = proj->add_option_group("crea", "Opcions de creació");
+    string description;
+    crea_group->add_flag("-c,--crea", "Crea un projecte a l'emmagatzematge actual.");
+    crea_group->add_option("description", description, "Descripcio del nou projecte/aplicació");
+
+    /* CLI::App *crea = */app.add_subcommand("crea", "Crea un emmagatzematge nou i posa'l com a predeterminat");
+    
+    /* CLI::App *llista = */app.add_subcommand("llista", "Llista els elements de l'entorn seleccionat");
     app.require_subcommand(1);  // 1 subcomanda requerida
 
 
@@ -102,7 +112,10 @@ int main(int argc, char **argv) {
 
     for(auto subcom : app.get_subcommands()) {
         string nom = subcom->get_name();
-        if(nom == "app") app_command(subcom);
+        if(nom == "app") {
+            cout << description;
+            app_command(subcom, &app_name);
+        }
         if(nom == "llista") ls_command(subcom);
         if(nom == "crea") crea_command(subcom);
     }
@@ -114,8 +127,14 @@ int main(int argc, char **argv) {
 
 /* 8 function declarations */
 
-void app_command(CLI::App *comm) {
-    cout << comm->get_name();
+void app_command(CLI::App *comm, string *app_name) {
+    cout << comm->get_name() << endl;
+    if(comm->count("app_name"))
+        cout << "Projecte seleccionat: " << *app_name << endl;
+
+    if(comm->count("-c") or comm->count("--crea")) {
+        // Creem un projecte, ignorem la resta
+    }
 
     return;
 }
@@ -145,13 +164,10 @@ void crea_command(CLI::App *comm) {
 
 void read_global_state(int *app, int *vault) {
     if(boost::filesystem::exists(paraordenar_dir+"/app"))  {
-         // C++ Way: no funciona 
         fstream app_state_file(paraordenar_dir+"/app", ios::in | ios::binary);
         int app_id;
         app_state_file.read(reinterpret_cast<char*>(&app_id), sizeof(app_id));
         *app = app_id;
-        // Provem a l'estil de C 
-
     } else {
         fstream app_state_file(paraordenar_dir+"/app", ios::out | ios::binary);
         int no_app = -1;

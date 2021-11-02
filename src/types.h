@@ -1,3 +1,5 @@
+#pragma once
+#define PARAORDENAR_VERSION "v0.1"
 
 enum struct ExceptionType { 
     ENoPath, 
