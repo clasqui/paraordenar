@@ -79,18 +79,12 @@
 
     this->app_file.open(path+"/.proapp", ios::in);
     
-    /* CODI PER TREBALLAR AMB FITXERS TAL CUAL
-
-    // Check if storage file is ok
-    string firstline;
-    getline(app_file, firstline);
-    if(firstline!="paraordenar_storage_definition") {
-        throw PROException(ExceptionType::EMalformedStorage, "Malformed Storage");
-    }
-    */
 
     pugi::xml_parse_result result = doc.load(app_file);
     if(!result) throw PROException(ExceptionType::EXMLParseError, result.description());
+
+    this->name = doc.child("paraordenar").child("info").child("name").text().get();
+    this->description = doc.child("paraordenar").child("info").child("description").text().get();
 
     app_file.close();
  }
@@ -101,4 +95,8 @@
 
  const string Project::get_path() {
      return app_path;
+ }
+
+  const string Project::get_description() {
+     return description;
  }

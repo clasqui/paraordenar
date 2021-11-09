@@ -40,6 +40,7 @@ void ls_command(CLI::App *comm);
 void crea_command(CLI::App *comm);
 
 void read_global_state(int *, int *);
+void set_global_state_app(int);
 
 int main(int argc, char **argv) {
 /* 7 command-line parsing */
@@ -129,9 +130,6 @@ int main(int argc, char **argv) {
 /* 8 function declarations */
 
 void app_command(CLI::App *comm, string *app_name) {
-    cout << comm->get_name() << endl;
-    if(comm->count("app_name"))
-        cout << "Projecte seleccionat: " << *app_name << endl;
 
     if(comm->count("-c") or comm->count("--crea")) {
         // Creem un projecte, ignorem la resta
@@ -141,12 +139,14 @@ void app_command(CLI::App *comm, string *app_name) {
         cout << "Nou projecte creat a " << nova_app->get_path() << endl;
 
         // Afegim app al storage
-        int id = mstr->new_app(nova_app);
+        int num_apps = mstr->new_app(nova_app);
 
         if(comm->count("-s")) {
             // Seleccionem app a l'entorn
-
+            set_global_state_app(num_apps-1);
         }
+    } else {
+        set_global_state_app(mstr->get_app_id(app_name));
     }
 
     return;
@@ -157,6 +157,18 @@ void ls_command(CLI::App *comm) {
     int c_app, c_vault;
     read_global_state(&c_app, &c_vault);
     cout << "Current app: " << to_string(c_app) << endl;
+
+
+    // De moment llistem apps
+    vector<Project *> apps;
+    mstr->get_apps(&apps);
+    cout << "Llista de projectes: (" << apps.size() << " en total)" << endl;
+    for (auto &&p : apps)
+    {
+        cout << "    -> " << p->get_name() << endl;
+        cout << "       " << p->get_description() << endl << endl;
+    }
+    
 
     return;
 }
@@ -203,6 +215,12 @@ void read_global_state(int *app, int *vault) {
     }
 
     return;
+}
+
+void set_global_state_app(int app_id) {
+    fstream app_state_file(paraordenar_dir+"/app", ios::out | ios::binary | ios::trunc);
+    app_state_file.write(reinterpret_cast<char*>(&app_id), sizeof(app_id));
+    app_state_file.close();
 }
 
 string creaEmmagatzematge() {

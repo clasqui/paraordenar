@@ -31,6 +31,7 @@ class Project {
 
     const string get_path();
     const string get_name();
+    const string get_description();
 
     
 };

@@ -101,3 +101,25 @@ int Storage::new_app(Project * app) {
     return distance(doc.child("paraordenar").child("apps").children().begin(), 
                     doc.child("paraordenar").child("apps").children().end());
 }
+
+int Storage::get_app_id(string *app_name) {
+    int i = 0;
+    pugi::xml_node app_node;
+    for (app_node = doc.child("paraordenar").child("apps").first_child(); app_node; app_node = app_node.next_sibling())
+    {
+        if(app_node.text().get() == *app_name) {
+            break;
+        }
+        ++i;
+    }
+    return app_node ? i : -1;
+}
+
+void Storage::get_apps(vector<Project*> *apps) {
+    pugi::xml_node app_node;
+    for (app_node = doc.child("paraordenar").child("apps").first_child(); app_node; app_node = app_node.next_sibling())
+    {
+        Project *app = new Project(storage_path+"/"+app_node.text().get());
+        (*apps).push_back(app);
+    }
+}

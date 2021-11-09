@@ -48,6 +48,8 @@ class Storage {
         void init_path(string);
 
         int new_app(Project*);
+        int get_app_id(string*);
+        void get_apps(vector<Project*> *);
 
 };
 
