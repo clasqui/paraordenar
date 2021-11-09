@@ -14,6 +14,7 @@
 #include <string>
 #include <boost/regex.hpp>
 #include "pugixml.hpp"
+#include "project.hpp"
 
 using namespace std;
 
@@ -45,6 +46,8 @@ class Storage {
         string get_path();
         void get_apps();
         void init_path(string);
+
+        int new_app(Project*);
 
 };
 

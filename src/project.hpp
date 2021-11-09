@@ -19,13 +19,18 @@ using namespace std;
 
 class Project {
     string name;
-    string path;
-
     string description;
 
+    pugi::xml_document doc;
+    fstream app_file;
+    string app_path;
+
     public:
-    Project::Project(string);
-    Project::Project(string, string);
+    Project(string);
+    Project(string, string, string);
+
+    const string get_path();
+    const string get_name();
 
     
-}
+};

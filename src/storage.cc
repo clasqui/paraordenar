@@ -64,7 +64,7 @@ Storage::Storage() {
 }
 
 Storage::~Storage() {
-    storage_file.open(storage_path+"./.prostorage", ios::out | ios::trunc); 
+    storage_file.open(storage_path+"/.prostorage", ios::out | ios::trunc); 
     doc.save(storage_file);
 
     storage_file.close();
@@ -81,7 +81,7 @@ void Storage::init_path(string path) {
     this->storage_path = path;
 
     fstream tmp_storagefile;
-    tmp_storagefile.open(path+"./.prostorage", ios::out | ios::trunc); 
+    tmp_storagefile.open(path+"/.prostorage", ios::out | ios::trunc); 
     doc.save(tmp_storagefile);
     tmp_storagefile.close();
 
@@ -91,4 +91,13 @@ void Storage::init_path(string path) {
     if(!result) throw PROException(ExceptionType::EXMLParseError, result.description());
     storage_file.close();
 
+}
+
+int Storage::new_app(Project * app) {
+    pugi::xml_node app_node = doc.child("paraordenar").child("apps").append_child("app");
+    app_node.append_attribute("active") = "true";
+    app_node.append_child(pugi::node_pcdata).set_value(app->get_name().c_str());
+
+    return distance(doc.child("paraordenar").child("apps").children().begin(), 
+                    doc.child("paraordenar").child("apps").children().end());
 }

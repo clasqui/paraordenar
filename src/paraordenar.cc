@@ -16,6 +16,7 @@
 #include <boost/filesystem.hpp>
 
 #include "storage.hpp"
+#include "project.hpp"
 #include "types.h"
 
 using namespace std;
@@ -53,8 +54,9 @@ int main(int argc, char **argv) {
     proj->add_option("app_name", app_name, "Nom del projecte")->required();
     auto crea_group = proj->add_option_group("crea", "Opcions de creació");
     string description;
-    crea_group->add_flag("-c,--crea", "Crea un projecte a l'emmagatzematge actual.");
+    CLI::Option *crea_flag = crea_group->add_flag("-c,--crea", "Crea un projecte a l'emmagatzematge actual.");
     crea_group->add_option("description", description, "Descripcio del nou projecte/aplicació");
+    crea_group->add_flag("-s,--set", "Selecciona el nou projecte creat per l'entorn")->needs(crea_flag);
 
     /* CLI::App *crea = */app.add_subcommand("crea", "Crea un emmagatzematge nou i posa'l com a predeterminat");
     
@@ -113,14 +115,13 @@ int main(int argc, char **argv) {
     for(auto subcom : app.get_subcommands()) {
         string nom = subcom->get_name();
         if(nom == "app") {
-            cout << description;
             app_command(subcom, &app_name);
         }
         if(nom == "llista") ls_command(subcom);
         if(nom == "crea") crea_command(subcom);
     }
 
-    delete mstr;
+    delete mstr; // El destructor guarda la info al fitxer!
 
     return 0;
 }
@@ -134,6 +135,18 @@ void app_command(CLI::App *comm, string *app_name) {
 
     if(comm->count("-c") or comm->count("--crea")) {
         // Creem un projecte, ignorem la resta
+        CLI::results_t res_desc = comm->get_option("description")->results();
+        string description = *(res_desc.begin());
+        Project *nova_app = new Project(*app_name, description, mstr->get_path());
+        cout << "Nou projecte creat a " << nova_app->get_path() << endl;
+
+        // Afegim app al storage
+        int id = mstr->new_app(nova_app);
+
+        if(comm->count("-s")) {
+            // Seleccionem app a l'entorn
+
+        }
     }
 
     return;
