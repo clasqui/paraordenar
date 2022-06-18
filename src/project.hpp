@@ -15,23 +15,27 @@
 #include <boost/regex.hpp>
 #include "pugixml.hpp"
 
-using namespace std;
+namespace Paraordenar {
 
 class Project {
-    string name;
-    string description;
+    std::string name;
+    std::string description;
+    bool active;
 
     pugi::xml_document doc;
-    fstream app_file;
-    string app_path;
+    std::fstream app_file;
+    std::string app_path;
 
     public:
-    Project(string);
-    Project(string, string, string);
+    Project(std::string);
+    Project(std::string, std::string, std::string);
 
-    const string get_path();
-    const string get_name();
-    const string get_description();
+    const std::string get_path();
+    const std::string get_name();
+    const std::string get_description();
+    const bool        get_active();
 
     
 };
+
+}

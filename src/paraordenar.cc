@@ -19,12 +19,13 @@
 #include "project.hpp"
 #include "types.h"
 
-using namespace std;
-
 /* 2 defines */
 #define CONFIG_PATH "/.config/paraordenar"
 
 /* 3 external declarations */
+
+using namespace Paraordenar;
+
 /* 4 typedefs */
 /* 5 global variable declarations */
 
@@ -33,9 +34,9 @@ Storage *mstr;
 
 /* 6 function prototypes */
 bool pathExists(const std::string &s);
-string creaEmmagatzematge();
+std::string creaEmmagatzematge();
 
-void app_command(CLI::App *comm, string *app_name);
+void app_command(CLI::App *comm, std::string *app_name);
 void ls_command(CLI::App *comm); 
 void crea_command(CLI::App *comm);
 
@@ -46,15 +47,15 @@ int main(int argc, char **argv) {
 /* 7 command-line parsing */
 
     CLI::App app{"ParaOrdenar - Eina d'emmagatzematge i gestió de traces Paraver"};
-    app.set_version_flag("--version", string(PARAORDENAR_VERSION), "Mostra la informació de versió i acaba.");
+    app.set_version_flag("--version", std::string(PARAORDENAR_VERSION), "Mostra la informació de versió i acaba.");
     app.set_help_all_flag("--help-all", "Mostra l'ajuda completa");
     
     // CLI::App *init = app.add_subcommand("init", "Inicialitza un entorn paraordenar al directori actual");
     CLI::App *proj = app.add_subcommand("app", "Crea, gestiona o mou-te a una aplicació/projecte");
-    string app_name;
+    std::string app_name;
     proj->add_option("app_name", app_name, "Nom del projecte")->required();
     auto crea_group = proj->add_option_group("crea", "Opcions de creació");
-    string description;
+    std::string description;
     CLI::Option *crea_flag = crea_group->add_flag("-c,--crea", "Crea un projecte a l'emmagatzematge actual.");
     crea_group->add_option("description", description, "Descripcio del nou projecte/aplicació");
     crea_group->add_flag("-s,--set", "Selecciona el nou projecte creat per l'entorn")->needs(crea_flag);
@@ -67,29 +68,30 @@ int main(int argc, char **argv) {
 
     std::fstream storageconfig;
     char *homepath = getenv("HOME");
-    string buff;
-    paraordenar_dir = string(homepath)+string(CONFIG_PATH);
+    std::string buff;
+    paraordenar_dir = std::string(homepath)+std::string(CONFIG_PATH);
     if(!pathExists(paraordenar_dir)) {
         boost::filesystem::create_directory(paraordenar_dir);
     }
     buff = paraordenar_dir + "/storage";
+
     if(!pathExists(buff)) {
-        storageconfig.open(buff, ios::out);
-        cout << "Benvingut a ParaOrdenar! No tens definit cap emmagatzematge." << endl;
-        cout << "Abans de començar a treballar, hauries de definir quin vols que sigui l'emmagatzematge per defecte de les traces.  Tranquil, després el podràs modificar." << endl;
+        storageconfig.open(buff, std::ios::out);
+        std::cout << "Benvingut a ParaOrdenar! No tens definit cap emmagatzematge." << std::endl;
+        std::cout << "Abans de començar a treballar, hauries de definir quin vols que sigui l'emmagatzematge per defecte de les traces.  Tranquil, després el podràs modificar." << std::endl;
         
-        string tmp_storagedir = creaEmmagatzematge();
-        storageconfig << tmp_storagedir << endl;
+        std::string tmp_storagedir = creaEmmagatzematge();
+        storageconfig << tmp_storagedir << std::endl;
 
         storageconfig.close();
 
         exit(0);
     } else {
-        storageconfig.open(buff, ios::in | ios::out);
+        storageconfig.open(buff, std::ios::in | std::ios::out);
     }
 
 
-    string mainstoragepath;
+    std::string mainstoragepath;
     std::string line;
     while (std::getline(storageconfig, line))
     {
@@ -106,15 +108,15 @@ int main(int argc, char **argv) {
     try {
         mstr = new Storage(mainstoragepath);
     } catch(PROException &e) {
-        cout << "Error en carregar l'emmagatzematge: " << endl;
-        cout << "  -> " << e.message << endl;
+        std::cout << "Error en carregar l'emmagatzematge: " << std::endl;
+        std::cout << "\t-> " << e.message << std::endl;
         exit(1);
     }
 
     CLI11_PARSE(app, argc, argv);
 
     for(auto subcom : app.get_subcommands()) {
-        string nom = subcom->get_name();
+        std::string nom = subcom->get_name();
         if(nom == "app") {
             app_command(subcom, &app_name);
         }
@@ -129,14 +131,14 @@ int main(int argc, char **argv) {
 
 /* 8 function declarations */
 
-void app_command(CLI::App *comm, string *app_name) {
+void app_command(CLI::App *comm, std::string *app_name) {
 
     if(comm->count("-c") or comm->count("--crea")) {
         // Creem un projecte, ignorem la resta
         CLI::results_t res_desc = comm->get_option("description")->results();
-        string description = *(res_desc.begin());
+        std::string description = *(res_desc.begin());
         Project *nova_app = new Project(*app_name, description, mstr->get_path());
-        cout << "Nou projecte creat a " << nova_app->get_path() << endl;
+        std::cout << "Nou projecte creat a " << nova_app->get_path() << std::endl;
 
         // Afegim app al storage
         int num_apps = mstr->new_app(nova_app);
@@ -146,7 +148,7 @@ void app_command(CLI::App *comm, string *app_name) {
             set_global_state_app(num_apps-1);
         }
     } else {
-        set_global_state_app(mstr->get_app_id(app_name));
+        set_global_state_app(mstr->get_app_id(*app_name));
     }
 
     return;
@@ -156,17 +158,16 @@ void ls_command(CLI::App *comm) {
 
     int c_app, c_vault;
     read_global_state(&c_app, &c_vault);
-    cout << "Current app: " << to_string(c_app) << endl;
+    std::cout << "Current app: " << std::to_string(c_app) << std::endl;
 
 
     // De moment llistem apps
-    vector<Project *> apps;
-    mstr->get_apps(&apps);
-    cout << "Llista de projectes: (" << apps.size() << " en total)" << endl;
+    std::vector<std::pair<std::string, bool>> apps;
+    apps = mstr->get_apps();
+    std::cout << "Llista de projectes: (" << apps.size() << " en total)" << std::endl;
     for (auto &&p : apps)
     {
-        cout << "    -> " << p->get_name() << endl;
-        cout << "       " << p->get_description() << endl << endl;
+        std::cout << "\t-> " << p.first << std::endl;
     }
     
 
@@ -178,10 +179,10 @@ void crea_command(CLI::App *comm) {
     delete mstr;
 
     std::fstream storageconfig;
-    storageconfig.open(paraordenar_dir+"/storage", ios::out);
+    storageconfig.open(paraordenar_dir+"/storage", std::ios::out);
 
-    string tmp_storagedir = creaEmmagatzematge();
-    storageconfig << tmp_storagedir << endl;
+    std::string tmp_storagedir = creaEmmagatzematge();
+    storageconfig << tmp_storagedir << std::endl;
 
     storageconfig.close();
 
@@ -189,12 +190,12 @@ void crea_command(CLI::App *comm) {
 
 void read_global_state(int *app, int *vault) {
     if(boost::filesystem::exists(paraordenar_dir+"/app"))  {
-        fstream app_state_file(paraordenar_dir+"/app", ios::in | ios::binary);
+        std::fstream app_state_file(paraordenar_dir+"/app", std::ios::in | std::ios::binary);
         int app_id;
         app_state_file.read(reinterpret_cast<char*>(&app_id), sizeof(app_id));
         *app = app_id;
     } else {
-        fstream app_state_file(paraordenar_dir+"/app", ios::out | ios::binary);
+        std::fstream app_state_file(paraordenar_dir+"/app", std::ios::out | std::ios::binary);
         int no_app = -1;
         app_state_file.write(reinterpret_cast<char*>(&no_app), sizeof(no_app));
         app_state_file.close();
@@ -202,12 +203,12 @@ void read_global_state(int *app, int *vault) {
     }
 
     if(boost::filesystem::exists(paraordenar_dir+"/vault"))  {
-        fstream vault_state_file(paraordenar_dir+"/vault", ios::in | ios::binary);
+        std::fstream vault_state_file(paraordenar_dir+"/vault", std::ios::in | std::ios::binary);
         int vault_id;
         vault_state_file.read(reinterpret_cast<char*>(&vault_id), sizeof(vault_id));
         *vault = vault_id;
     } else {
-        fstream vault_state_file(paraordenar_dir+"/vault", ios::out | ios::binary);
+        std::fstream vault_state_file(paraordenar_dir+"/vault", std::ios::out | std::ios::binary);
         int no_vault = -1;
         vault_state_file.write(reinterpret_cast<char*>(&no_vault), sizeof(no_vault));
         vault_state_file.close();
@@ -218,20 +219,30 @@ void read_global_state(int *app, int *vault) {
 }
 
 void set_global_state_app(int app_id) {
-    fstream app_state_file(paraordenar_dir+"/app", ios::out | ios::binary | ios::trunc);
+    std::fstream app_state_file(paraordenar_dir+"/app", std::ios::out | std::ios::binary | std::ios::trunc);
     app_state_file.write(reinterpret_cast<char*>(&app_id), sizeof(app_id));
     app_state_file.close();
 }
 
-string creaEmmagatzematge() {
-    string path;
-    cout << "Indica el camí on vols inicialitzar l'emmagatzematge: " << endl << "> " ;
-    cin >> path;
+std::string creaEmmagatzematge() {
+    std::string path;
+    std::cout << "Indica el camí on vols inicialitzar l'emmagatzematge: " << std::endl << "> " ;
+    std::cin >> path;
 
     mstr = new Storage();
-    mstr->init_path(path);
 
-    cout << "Emmagatzematge buit creat a " << path << endl;
+    try
+    {
+        mstr->init_path(path);
+    }
+    catch(const PROException& e)
+    {
+        std::cerr << e.message << '\n';
+        exit(1);
+    }
+    
+
+    std::cout << "Emmagatzematge buit creat a " << path << std::endl;
 
     return path;
 }

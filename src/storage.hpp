@@ -12,24 +12,28 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <map>
+#include <vector>
 #include <boost/regex.hpp>
 #include "pugixml.hpp"
 #include "project.hpp"
 
-using namespace std;
+namespace Paraordenar {
 
 class Storage {
 
-    string storage_path;
-    fstream storage_file;
+    std::string storage_path;
+    std::fstream storage_file;
+    std::map<std::string, std::string> params;
 
-    pugi::xml_document doc;
+    std::map<std::string, bool> apps;
+
 
     public:
         /**
             Constructor: Quan ja existeix emmagatzematge
         */
-        Storage (string);
+        Storage (std::string);
 
         /**
             Constructor: Crear emmagatzematge buit
@@ -43,14 +47,35 @@ class Storage {
         */
         ~Storage ();
         
-        string get_path();
-        void get_apps();
-        void init_path(string);
+        std::string get_path();
+        void init_path(std::string);
 
-        int new_app(Project*);
-        int get_app_id(string*);
-        void get_apps(vector<Project*> *);
+        /**
+         * @brief 
+         * 
+         * @param p Projecte a afegir a l'emmagatzematge
+         * @return int 
+         */
+        int new_app(Project* p);
+
+        /**
+         * @brief Obte l'id del projecte passat per parametre
+         * 
+         * @param key Nom del projecte
+         * @return int ID numeric 
+         */
+        int get_app_id(std::string key);
+
+        /**
+         * @brief Get the apps object
+         * 
+         */
+        std::vector<std::pair<std::string, bool>> get_apps();
+
+        //// PERSISTENCE ////
+        void writeStorageConfig();
+        void parseStorageConfig();
 
 };
 
-
+}

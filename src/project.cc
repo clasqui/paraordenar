@@ -12,7 +12,9 @@
  #include <boost/filesystem.hpp>
  #include <boost/regex.hpp>
 
- Project::Project(string name, string description, string storage_path) {
+using namespace Paraordenar;
+
+ Project::Project(std::string name, std::string description, std::string storage_path) {
 
      // Comprovem nom projecte
     static const boost::regex e("^\\w+$");
@@ -53,19 +55,19 @@
         boost::filesystem::create_directory(this->app_path);
     }
 
-    fstream tmp_appfile;
-    tmp_appfile.open(app_path+"/.proapp", ios::out | ios::trunc); 
+    std::fstream tmp_appfile;
+    tmp_appfile.open(app_path+"/.proapp", std::ios::out | std::ios::trunc); 
     doc.save(tmp_appfile);
     tmp_appfile.close();
 
-    this->app_file.open(app_path+"/.proapp", ios::in);
+    this->app_file.open(app_path+"/.proapp", std::ios::in);
 
     pugi::xml_parse_result result = doc.load(app_file);
     if(!result) throw PROException(ExceptionType::EXMLParseError, result.description());
     app_file.close();
  }
 
- Project::Project(string path) {
+ Project::Project(std::string path) {
          // Check if exists
     if(!boost::filesystem::exists(path)) {
         throw PROException(ExceptionType::ENoPath, "No existeix el path");
@@ -77,7 +79,7 @@
         throw PROException(ExceptionType::EStorageNotExists, "No existeix un projecte de ParaOrdenar al directori definit.");
     }
 
-    this->app_file.open(path+"/.proapp", ios::in);
+    this->app_file.open(path+"/.proapp", std::ios::in);
     
 
     pugi::xml_parse_result result = doc.load(app_file);
@@ -89,14 +91,18 @@
     app_file.close();
  }
 
- const string Project::get_name() {
+ const std::string Project::get_name() {
      return name;
  }
 
- const string Project::get_path() {
+ const std::string Project::get_path() {
      return app_path;
  }
 
-  const string Project::get_description() {
+  const std::string Project::get_description() {
      return description;
+ }
+
+ const bool Project::get_active() {
+    return active;
  }
