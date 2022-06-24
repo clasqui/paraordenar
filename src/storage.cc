@@ -13,7 +13,7 @@
 #include <string>
 #include "pugixml.hpp"
 
-using namespace Paraordenar;
+using namespace ParaordenarCore;
 
 
 Storage::Storage(std::string path) {
@@ -52,6 +52,11 @@ void Storage::init_path(std::string path) {
     if(!boost::filesystem::exists(path)) {
         throw PROException(ExceptionType::ENoPath, "No existeix el path");
     }
+
+    if(boost::filesystem::exists(boost::filesystem::path(path).append(".prostorage"))) {
+        throw PROException(ExceptionType::EAlreadyExists, "Ja hi ha un emmagatzematge inicialitzat en aquest directori.");
+    }
+
     this->storage_path = path;
 
     
@@ -68,8 +73,8 @@ void Storage::init_path(std::string path) {
 
 int Storage::new_app(Project * p) {
 
-    apps.insert({p->get_name(), p->get_active()});
-    
+    auto it = apps.insert({p->get_name(), p->get_active()});
+    return std::distance(apps.begin(), it.first);
 }
 
 int Storage::get_app_id(std::string key) {

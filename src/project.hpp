@@ -15,7 +15,7 @@
 #include <boost/regex.hpp>
 #include "pugixml.hpp"
 
-namespace Paraordenar {
+namespace ParaordenarCore {
 
 class Project {
     std::string name;

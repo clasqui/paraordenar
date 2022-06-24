@@ -18,7 +18,7 @@
 #include "pugixml.hpp"
 #include "project.hpp"
 
-namespace Paraordenar {
+namespace ParaordenarCore {
 
 class Storage {
 

@@ -1,7 +1,7 @@
 #pragma once
 #define PARAORDENAR_VERSION "v0.1"
 
-namespace Paraordenar {
+namespace ParaordenarCore {
 
 enum struct ExceptionType { 
     ENoPath, 
@@ -9,7 +9,8 @@ enum struct ExceptionType {
     EMalformedStorage,
     EXMLParseError,
     EMemoryError,
-    ENameNotValid
+    ENameNotValid,
+    EAlreadyExists
 };
 
 struct PROException {
@@ -19,5 +20,12 @@ struct PROException {
     PROException(ExceptionType e_t, std::string message) : e_t(e_t), message(message) {};
     ~PROException() {};
 };
+
+typedef enum {
+    TStorage,
+    TApplication,
+    TVault,
+    TTrace
+} object_t;
 
 }

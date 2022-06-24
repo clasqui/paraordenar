@@ -12,7 +12,7 @@
  #include <boost/filesystem.hpp>
  #include <boost/regex.hpp>
 
-using namespace Paraordenar;
+using namespace ParaordenarCore;
 
  Project::Project(std::string name, std::string description, std::string storage_path) {
 

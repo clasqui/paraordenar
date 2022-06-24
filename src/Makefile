@@ -1,22 +1,31 @@
 
 TARGET=pro
-CXX=g++
+SHAREDLIB_TARGET=libparaordenar_core.so
+DYLIB_TARGET=libparaordenar_core.dylib
+STATICLIB_TARGET=libparaordenar_core.a
+CXX=clang++
 
-CXXFLAGS= -Wall -g -I./
+CXXFLAGS= -Wall -g -I./ -I/Users/marcclasca/Documents/Programació/boost/include -std=c++20
+LDFLAGS= -fuse-ld=lld -L/Users/marcclasca/Documents/Programació/boost/lib -lboost_regex -lboost_filesystem
 
+LIB_OBJECTS := storage.cc project.cc pugixml.cpp 
+
+.PHONY:
 all: pro
 
-pro: paraordenar.cc storage.o project.o pugixml.o
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $^ -L/usr/local/lib -static -lboost_filesystem
+pro: paraordenar.cc $(DYLIB_TARGET)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $^ $(LDFLAGS)
 
-storage.o: storage.cc
-	$(CXX) $(CXXFLAGS) -o $@ -c $^
+$(SHAREDLIB_TARGET): $(LIB_OBJECTS)
+	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -o $@ $^
 
-project.o: project.cc
-	$(CXX) $(CXXFLAGS) -o $@ -c $^
+$(DYLIB_TARGET): $(LIB_OBJECTS)
+	$(CXX) $(CXXFLAGS) -shared -undefined dynamic_lookup -fuse-ld=lld -o $@ $^
 
-pugixml.o: pugixml.cpp
-	$(CXX) $(CXXFLAGS) -o $@ -c $^
+$(STATICLIB_TARGET): $(LIB_OBJECTS)
+	llvm-ar cr $@ $^
+
+lib: $(SHAREDLIB_TARGET) $(DYLIB_TARGET) $(STATICLIB_TARGET)
 
 clean:
-	rm *.o $(TARGET)
+	rm *.o $(TARGET) $(SHAREDLIB_TARGET) $(STATICLIB_TARGET) $(DYLIB_TARGET)
