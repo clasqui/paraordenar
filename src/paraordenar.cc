@@ -7,6 +7,15 @@
  *
  **/
 
+/**
+ * @file paraordenar.cc
+ * @author Marc Clascà Ramírez
+ * @brief Fitxer d'entrada del programa paraordenar.
+ * @version 0.1
+ * @date 2022-07-02
+ * 
+ */
+
 /* 1 includes */
 #include <iostream>
 #include <fstream>
@@ -139,9 +148,9 @@ int main(int argc, char **argv)
  * 
  * Per fer-ho, examina per orde l'existència de les opcions que
  * es refereixen a objectes. Aquestes son:
- *      -a Aplicació
- *      -x Caixa
- *      -t Traça
+ *      - -a Aplicació
+ *      - -x Caixa
+ *      - -t Traça
  * 
  * @param comm Objecte comanda de la llibreria CLI
  * @param hierarchy vector buit per omplir amb la jerarquia

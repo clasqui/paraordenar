@@ -3,9 +3,17 @@
  * ParaOrdenar
  * Storage Class
  * GNU General Public License v3.0
- * Author: Marc Clascà Ramírez
  *
  **/
+
+/**
+ * @file storage.cc
+ * @author Marc Clascà Ramírez
+ * @brief Fitxer de la implementació de la classe Storage
+ * @version 0.1
+ * @date 2022-07-02
+ *
+ */
 
 #include "storage.hpp" 
 #include <boost/filesystem.hpp>

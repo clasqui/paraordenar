@@ -31,4 +31,8 @@
 *.out
 *.app
 
-src/pro
+build/
+bin/
+lib/
+doc/
+.vscode

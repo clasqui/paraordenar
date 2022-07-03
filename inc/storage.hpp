@@ -5,9 +5,16 @@
  * ParaOrdenar
  * Storage Class
  * GNU General Public License v3.0
- * Author: Marc Clascà Ramírez
- *
  **/
+
+/**
+ * @file storage.hpp
+ * @author Marc Clascà Ramírez
+ * @brief Fitxer de la declaració de la classe Storage
+ * @version 0.1
+ * @date 2022-07-02
+ *
+ */
 
 #include <iostream>
 #include <fstream>
@@ -18,8 +25,27 @@
 #include "pugixml.hpp"
 #include "project.hpp"
 
+/**
+ * @brief El namespace ParaordenarCore inclou
+ * el codi base per a la llibreria principal de 
+ * Paraordenar.  Conté les classes i mètodes 
+ * que serveixen com a kernel pel funcionament de
+ * frontends que treballin amb paraodenar.
+ * 
+ */
 namespace ParaordenarCore {
 
+/**
+ * @brief Representa el nivell més alt en la jerarquia 
+ *          d'emmagatzematge del sistema paraordenar.
+ * 
+ * Un emmagatzematge és el punt bàsic d'entrada per 
+ * l'aplicació: a partir de l'emmagatzematge es 
+ * construeix l'arbre de recursos.  Per això, és 
+ * imprescindible que l'usuari configuri un emmagatzematge
+ * paraordenar al sistema.
+ * 
+ */
 class Storage {
 
     std::string storage_path;

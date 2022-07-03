@@ -9,6 +9,15 @@
  *
  **/
 
+/**
+ * @file project.hpp
+ * @author Marc Clascà Ramírez
+ * @brief Fitxer de la declaració de la classe Project
+ * @version 0.1
+ * @date 2022-07-02
+ * 
+ */
+
 #include <iostream>
 #include <fstream>
 #include <string>

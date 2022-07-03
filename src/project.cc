@@ -7,6 +7,15 @@
  *
  **/
 
+/**
+ * @file project.cc
+ * @author Marc Clascà Ramírez
+ * @brief Fitxer de la implementació de la classe Project
+ * @version 0.1
+ * @date 2022-07-02
+ * 
+ */
+
  #include "project.hpp"
  #include "types.h"
  #include <boost/filesystem.hpp>
