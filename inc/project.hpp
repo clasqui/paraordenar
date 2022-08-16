@@ -22,29 +22,105 @@
 #include <fstream>
 #include <string>
 #include <boost/regex.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 #include "pugixml.hpp"
 
 namespace ParaordenarCore {
 
-class Project {
-    std::string name;
-    std::string description;
-    bool active;
 
-    pugi::xml_document doc;
-    std::fstream app_file;
-    std::string app_path;
+    /**
+     * @brief Un projecte representa el nivell d'ordenació bàsic
+     *  en el sistema de Paraordenar.
+     *
+     * Dins de qualsevol emmagatzematge trobem projectes. Cada projecte
+     * engloba una aplicació o altre tipus de software, sobre el que
+     * s'esta fent un treball de performance analysis amb uns objectius.
+     *
+     * Un projecte té un nom, una descripció, una data d'inici i possible
+     * data de finalització, i un llenguatge de programació. Un projecte pot
+     * estar actiu o inactiu. Quan està inactiu, el directori del projecte
+     * es comprimeix.
+     *
+     * Dins d'un projecte, les traces s'ordenen per caixes.
+     *
+     */
+    class Project
+    {
+        std::string name;
+        std::string description;
+        boost::gregorian::date d_inici;
+        boost::gregorian::date d_fin;
+        std::string language;
+        bool active;
+
+        std::vector<std::string> vaults;
+
+        std::fstream app_file;
+        std::string app_path;
+        std::map<std::string, std::string> params;
+
+        /**
+         * @name Persistència
+         * Funcions per escriure i parsejar el
+         * contingut xml corresponent al sistema
+         * de fitxers.
+         */
+        ///@{
+        void parseProjectDefinition();
+        void writeProjectDefinition();
+        ///@}
 
     public:
-    Project(std::string);
-    Project(std::string, std::string, std::string);
+        /**
+         * @brief Construeix un nou projecte a partir
+         *          d'un projecte existent al sistema.
+         *
+         * @param path path del projecte.
+         */
+        Project(std::string path);
 
-    const std::string get_path();
-    const std::string get_name();
-    const std::string get_description();
-    const bool        get_active();
+        /**
+         * @brief Construeix un nou projecte amb les dades
+         *        proporcionades, i l'inclou a l'emmagatzematge indicat
+         *
+         * @param name Nom del nou projecte
+         * @param description Descripcio del nou projecte
+         * @param storagePath Cami de l'emmagatzematge on s'incloura
+         */
+        Project(std::string name, std::string description, std::string storagePath);
 
+        
+
+        /**
+         * @name Getters and Setters
+         * Funcions per obtenir i posar els valors
+         * als membres de la classe Project.
+         */
+        ///@{
+        const std::string get_path();
+        const std::string get_name();
+        const std::string get_description();
+        const std::string get_language();
+        const bool get_active();
+        const boost::gregorian::date get_inici();
+        const boost::gregorian::date get_final();
+
+        void set_description(std::string desc);
+        void set_active(bool active);
+        void set_language(std::string lang);
+        void set_dInici(boost::gregorian::date d);
+        void set_dFinal(boost::gregorian::date d);
+        ///@}
     
+
+        /**
+         * @brief Guarda la informació del projecte en disc
+         * @todo La implementació actual és molt simple, només 
+         * escriu en disc. Cal millorar la implementació per 
+         * diferenciar entre projectes arxivats o actius.
+         */
+        void save();
 };
 
 }

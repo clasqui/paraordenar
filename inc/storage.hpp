@@ -35,6 +35,7 @@
  */
 namespace ParaordenarCore {
 
+
 /**
  * @brief Representa el nivell més alt en la jerarquia 
  *          d'emmagatzematge del sistema paraordenar.
@@ -73,16 +74,37 @@ class Storage {
         */
         ~Storage ();
         
+        /**
+         * @brief Obte el cami de l'emmagatzematge al sistema de fitxers.
+         * 
+         * @return El cami en format string
+         */
         std::string get_path();
-        void init_path(std::string);
 
         /**
-         * @brief 
+         * @brief Inicialitza l'emmagatzematge de paraordenar
+         *          al cami indicat del sistema de fitxers.
          * 
-         * @param p Projecte a afegir a l'emmagatzematge
-         * @return int 
+         * @param path Cami on inicialitzar
          */
-        int new_app(Project* p);
+        void init_path(std::string path);
+
+        /**
+         * @brief Crea un nou projecte dins l'emmagatzematge
+         * 
+         * @param name Nom del nou projecte 
+         * @param description Descripcio del nou projecte
+         * @return Punter al nou projecte
+         */
+        Project* new_app(std::string name, std::string description);
+
+        /**
+         * @brief Retorna l'objecte pel projecte indicat dins l'emmagatzematge.
+         * 
+         * @param key Nom del projecte
+         * @return Punter la projecte
+         */
+        Project* open_app(std::string key);
 
         /**
          * @brief Obte l'id del projecte passat per parametre

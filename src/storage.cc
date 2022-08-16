@@ -79,10 +79,23 @@ void Storage::init_path(std::string path) {
 
 }
 
-int Storage::new_app(Project * p) {
-
+Project* Storage::new_app(std::string name, std::string description)
+{
+    Project * p = new Project(name, description, this->storage_path);
     auto it = apps.insert({p->get_name(), p->get_active()});
-    return std::distance(apps.begin(), it.first);
+    return p;
+}
+
+Project* Storage::open_app(std::string key) {
+    auto el = apps.find(key);
+    if (el == apps.end() || !(*el).second)
+    {
+        return nullptr;
+    }
+    else
+    {
+        return new Project(this->storage_path + "/" + key);
+    }
 }
 
 int Storage::get_app_id(std::string key) {

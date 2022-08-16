@@ -21,8 +21,11 @@
 #include <fstream>
 #include <string>
 #include <sys/stat.h>
-#include <CLI11.hpp>
+
+//Libraries
+#include "CLI11.hpp"
 #include <boost/filesystem.hpp>
+#include <fmt/core.h>
 
 #include "storage.hpp"
 #include "project.hpp"
@@ -32,23 +35,23 @@
 #define CONFIG_PATH "/.config/paraordenar"
 
 /* 3 external declarations */
-
 using namespace ParaordenarCore;
 
 /* 4 typedefs */
-/* 5 global variable declarations */
 
-std::string paraordenar_dir;
-std::string mainstoragepath;
-Storage *mstr;
+/* 5 global variable declarations */
+std::string paraordenar_dir; /*!< Camí al directori de configuració de l'aplicació */
+std::string mainstoragepath; /*!< Camí de l'emmagatzematge principal */
+Storage *mstr;               /*!< Punter a l'objecte global d'emmagatzemarge principal */
 
 /* 6 function prototypes */
 bool pathExists(const std::string &s);
 std::string creaEmmagatzematge();
 
-void sel_command(CLI::App *comm);
-void ls_command(CLI::App *comm); 
-void crea_command(CLI::App *comm);
+void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
+void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
+void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
+void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
 
 void read_global_state(int *, int *);
 void set_global_state_app(int);
@@ -66,21 +69,15 @@ int main(int argc, char **argv)
     app.set_version_flag("--version", std::string(PARAORDENAR_VERSION), "Mostra la informació de versió i acaba.");
     app.set_help_all_flag("--help-all", "Mostra l'ajuda completa");
 
+    app.add_flag("-r", "Imprimeix els resultats sense decorar el text")->fallthrough();
+
     
     app.add_option("-a", "Aplicació");
     app.add_option("-x", "Caixa");
     app.add_option("-t", "Traça");
 
-    // CLI::App *init = app.add_subcommand("init", "Inicialitza un entorn paraordenar al directori actual");
-    // CLI::App *proj = app.add_subcommand("app", "Crea, gestiona o mou-te a una aplicació/projecte");
-    // std::string app_name;
-    // proj->add_option("app_name", app_name, "Nom del projecte")->required();
-    // auto crea_group = proj->add_option_group("crea", "Opcions de creació");
-    // std::string description;
-    // CLI::Option *crea_flag = crea_group->add_flag("-c,--crea", "Crea un projecte a l'emmagatzematge actual.");
-    // crea_group->add_option("description", description, "Descripcio del nou projecte/aplicació");
-
-    CLI::App *crea = app.add_subcommand("crea", "Crea un emmagatzematge nou, aplicació, caixa, o traça")->fallthrough();
+    CLI::App *crea = app.add_subcommand("crea", "Crea un emmagatzematge nou, aplicació, caixa, o traça")
+    ->alias("cre")->fallthrough();
     crea->add_option("description", "Descripcio del nou objecte creat. S'ignora si es crea un nou emmagatzematge.");
     crea->add_flag("-s,--set", "Selecciona el nou objecte creat per l'entorn");
 
@@ -95,6 +92,9 @@ int main(int argc, char **argv)
 
     CLI::App *arx = app.add_subcommand("arxiva", "Arxiva una aplicació")
     ->alias("arx")->fallthrough();
+
+    CLI::App *sync = app.add_subcommand("sincronitza", "Sincronitza un emmagatzematge, projecte o caixa amb un repositori remot")
+    ->alias("sin")->fallthrough();
 
     CLI::App *sel = app.add_subcommand("selecciona", "Sel·lecciona l'objecte per establir com a entorn")
     ->alias("sel")->fallthrough();
@@ -127,11 +127,15 @@ int main(int argc, char **argv)
 
     CLI11_PARSE(app, argc, argv);
 
+    std::vector<std::string> objectHierarchy;
+    object_t subject = objectHierarchyFromOptions(&app, objectHierarchy);
+
     for(auto subcom : app.get_subcommands()) {
         std::string nom = subcom->get_name();
-        if(nom == "sel") sel_command(subcom);
-        if(nom == "llista") ls_command(subcom);
-        if(nom == "crea") crea_command(subcom);
+        if(nom == "selecciona") sel_command(subcom, subject, objectHierarchy, app->count("-r"));
+        if(nom == "llista") ls_command(subcom, subject, objectHierarchy, app->count("-r"));
+        if(nom == "crea") crea_command(subcom, subject, objectHierarchy, app->count("-r"));
+        if(nom == "informacio") inf_command(subcom, subject, objectHierarchy, app->count("-r"));
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -233,7 +237,19 @@ void initializeStorage() {
     storageconfig.close();
 }
 
-void sel_command(CLI::App *comm) {
+
+/**
+ * @name Command Functions
+ * 
+ */
+//@{
+
+/**
+ * @brief Funció per gestionar la comanda _selecciona_
+ * 
+ * @param comm Punter a l'objecte amb la subcomanda
+ */
+void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
 
     if(comm->count("-d")) {
         // Cas de descartar l'entorn seleccionat
@@ -266,7 +282,12 @@ void sel_command(CLI::App *comm) {
     return;
 }
 
-void ls_command(CLI::App *comm) {
+/**
+ * @brief Funció per gestionar la comanda _llista_
+ *
+ * @param comm Punter a l'objecte amb la subcomanda
+ */
+void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
 
     // De moment llistem apps
     std::vector<std::pair<std::string, bool>> apps;
@@ -281,7 +302,12 @@ void ls_command(CLI::App *comm) {
     return;
 }
 
-void crea_command(CLI::App *comm) {
+/**
+ * @brief Funció per gestionar la comanda _crea_
+ *
+ * @param comm Punter a l'objecte amb la subcomanda
+ */
+void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
 
     std::vector<std::string> objectHierarchy;
     object_t subject = objectHierarchyFromOptions(comm, objectHierarchy);
@@ -307,20 +333,18 @@ void crea_command(CLI::App *comm) {
 
         storageconfig.close();
         break;
-        
 
     case TApplication:
         res_desc = comm->get_option("description")->results();
         description = *(res_desc.begin());
-        nova_app = new Project(objectHierarchy.back(), description, mstr->get_path());
+        nova_app = mstr->new_app(objectHierarchy.back(), description);
         std::cout << "Nou projecte creat a " << nova_app->get_path() << std::endl;
 
-        // Afegim app al storage
-        id_inserit = mstr->new_app(nova_app);
 
         if (comm->count("-s"))
         {
             // Seleccionem app a l'entorn
+            id_inserit = mstr->get_app_id(nova_app->get_name());
             set_global_state_app(id_inserit);
         }
         break;
@@ -330,6 +354,55 @@ void crea_command(CLI::App *comm) {
     }
 
 }
+
+/**
+ * @brief Funció per gestionar la comanda _informacio_
+ * 
+ * @param comm Punter a l'objecte amb la subcomanda
+ */
+void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
+    Project * p;
+    boost::gregorian::date di;
+
+    
+    SUBJECT_SWITCH
+    std::cout
+    << "El teu emmagatzematge es troba a:" << std::endl
+    << mstr->get_path() << std::endl;
+
+    SUBJECT_SWITCH_APP
+    p = mstr->open_app(oh.back());
+    if(p == nullptr) {
+        std::cerr << "El projecte no existeix!" << std::endl;
+        exit(1);
+    }
+
+    fmt::print("\t┌{0:─^{1}}┐\n"
+                   "\t│{2: ^{1}}│\n"
+                   "\t│{3: ^{1}}│\n"
+                   "\t└{0:─^{1}}┘\n",
+                   "", 30, p->get_name(), p->get_active() ? "Actiu" : "Arxivat");
+    fmt::print("Descripció:   {}\n
+                Llenguatge:   {}\n
+                Data d'inici: {:%m-%Y}\n",
+                p->description, p->language, p->d_inici.to_tm());
+    if(!p->actiu) {
+        fmt::print("Data fi:      {:%m-%Y}", p->d_fin.to_tm());
+    }
+    
+
+
+    // std::cout << "Projecte: " << p->get_name() << std::endl;
+    // std::cout << "\tDescripció: " << p->get_description() << std::endl;
+    // std::cout << "\tLlenguatge: " << p->get_language() << std::endl;
+    // di = p->get_inici();
+    // std::cout << "\tData d'inici: " << fmt::format("{}/{}/{}", di.day(), di.month(), di.year()) << std::endl;
+
+    SUBJECT_SWITCH_FIN
+}
+
+
+//@}
 
 void read_global_state(int *app, int *vault) {
     if(boost::filesystem::exists(paraordenar_dir+"/app"))  {
