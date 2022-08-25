@@ -23,7 +23,7 @@ OBJEXT      := o
 
 #Flags, libraries and includes
 
-CXXFLAGS= -Wall -Wno-deprecated-pragma -g -I/usr/local/opt/llvm/include -I$(INCDIR) -I/Users/marcclasca/Documents/Programació/boost/include -I/usr/local/Cellar/fmt/8.1.1_1/include -std=c++20
+CXXFLAGS= -Wall -Wno-deprecated-pragma -g -std=c++20 -I/usr/local/opt/llvm/include -I$(INCDIR) -I/Users/marcclasca/Documents/Programació/boost/include -I/usr/local/Cellar/fmt/8.1.1_1/include
 LDFLAGS= -fuse-ld=lld -L/Users/marcclasca/Documents/Programació/boost/lib -lboost_regex -lboost_filesystem -L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib
 
 LIB_SOURCES := $(SRCDIR)/storage.cc $(SRCDIR)/project.cc $(SRCDIR)/pugixml.cc

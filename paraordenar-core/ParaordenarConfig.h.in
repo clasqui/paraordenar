@@ -1,0 +1,3 @@
+// the configured options and settings for Tutorial
+#define Paraordenar_VERSION_MAJOR @Paraordenar_VERSION_MAJOR@
+#define Paraordenar_VERSION_MINOR @Paraordenar_VERSION_MINOR@

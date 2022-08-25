@@ -25,11 +25,14 @@
 //Libraries
 #include "CLI11.hpp"
 #include <boost/filesystem.hpp>
+#include <boost/date_time/gregorian/conversion.hpp>
 #include <fmt/core.h>
+#include <fmt/chrono.h>
 
 #include "storage.hpp"
 #include "project.hpp"
 #include "types.h"
+#include "ParaordenarConfig.h"
 
 /* 2 defines */
 #define CONFIG_PATH "/.config/paraordenar"
@@ -66,10 +69,10 @@ int main(int argc, char **argv)
     /* 7 command-line parsing */
 
     CLI::App app{"ParaOrdenar - Eina d'emmagatzematge i gestió de traces Paraver"};
-    app.set_version_flag("--version", std::string(PARAORDENAR_VERSION), "Mostra la informació de versió i acaba.");
+    app.set_version_flag("--version", std::string(Paraordenar_VERSION_MAJOR+"."+Paraordenar_VERSION_MINOR), "Mostra la informació de versió i acaba.");
     app.set_help_all_flag("--help-all", "Mostra l'ajuda completa");
 
-    app.add_flag("-r", "Imprimeix els resultats sense decorar el text")->fallthrough();
+    app.add_flag("-r,--raw", "Imprimeix els resultats sense decorar el text");
 
     
     app.add_option("-a", "Aplicació");
@@ -132,10 +135,10 @@ int main(int argc, char **argv)
 
     for(auto subcom : app.get_subcommands()) {
         std::string nom = subcom->get_name();
-        if(nom == "selecciona") sel_command(subcom, subject, objectHierarchy, app->count("-r"));
-        if(nom == "llista") ls_command(subcom, subject, objectHierarchy, app->count("-r"));
-        if(nom == "crea") crea_command(subcom, subject, objectHierarchy, app->count("-r"));
-        if(nom == "informacio") inf_command(subcom, subject, objectHierarchy, app->count("-r"));
+        if(nom == "selecciona") sel_command(subcom, subject, objectHierarchy, app.count("-r"));
+        if(nom == "llista") ls_command(subcom, subject, objectHierarchy, app.count("-r"));
+        if(nom == "crea") crea_command(subcom, subject, objectHierarchy, app.count("-r"));
+        if(nom == "informacio") inf_command(subcom, subject, objectHierarchy, app.count("-r"));
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -382,12 +385,12 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r
                    "\t│{3: ^{1}}│\n"
                    "\t└{0:─^{1}}┘\n",
                    "", 30, p->get_name(), p->get_active() ? "Actiu" : "Arxivat");
-    fmt::print("Descripció:   {}\n
-                Llenguatge:   {}\n
-                Data d'inici: {:%m-%Y}\n",
-                p->description, p->language, p->d_inici.to_tm());
-    if(!p->actiu) {
-        fmt::print("Data fi:      {:%m-%Y}", p->d_fin.to_tm());
+    fmt::print("Descripció:   {}\n"
+               "Llenguatge:   {}\n"
+               "Data d'inici: {:%m-%Y}\n",
+                p->get_description(), p->get_language(), boost::gregorian::to_tm(p->get_inici()));
+    if(!p->get_active()) {
+        fmt::print("Data fi:      {:%m-%Y}", boost::gregorian::to_tm(p->get_final()));
     }
     
 

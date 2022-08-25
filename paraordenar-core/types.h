@@ -8,7 +8,6 @@
  */
 
 #pragma once
-#define PARAORDENAR_VERSION "01"
 
 #define SUBJECT_SWITCH switch (s) \
                         { \

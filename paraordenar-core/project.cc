@@ -18,6 +18,7 @@
 
  #include "project.hpp"
  #include "types.h"
+ #include "ParaordenarConfig.h"
  #include <boost/filesystem.hpp>
  #include <boost/regex.hpp>
 
@@ -79,7 +80,7 @@ void Project::writeProjectDefinition() {
     pugi::xml_node config_version = root.append_child("param");
     config_version.append_attribute("name") = "versio";
     config_version.append_attribute("type") = "string";
-    config_version.append_attribute("value") = PARAORDENAR_VERSION;
+    config_version.append_attribute("value") = Paraordenar_VERSION_MAJOR+"."+Paraordenar_VERSION_MINOR;
 
     pugi::xml_node info = root.append_child("info");
     
