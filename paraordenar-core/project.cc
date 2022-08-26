@@ -35,6 +35,7 @@ using namespace ParaordenarCore;
     this->name = name;
     this->description = description;
     this->language = "";
+    this->active = true;
 
     this->d_inici = boost::gregorian::date(boost::gregorian::day_clock::local_day());
     this->d_fin = boost::gregorian::date(1970, 1, 1);

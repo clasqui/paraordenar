@@ -6,7 +6,7 @@ include_directories(${FMT_INCLUDE_DIR})
 
 link_directories(${Paraordenar_SOURCE_DIR}/lib)
 
-add_executable(Paraordenar paraordenar.cc)
+add_executable(Paraordenar paraordenar.cc cli_visualizer.cc)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "pro")
 
 target_link_libraries(Paraordenar PUBLIC 

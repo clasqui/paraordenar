@@ -25,14 +25,12 @@
 //Libraries
 #include "CLI11.hpp"
 #include <boost/filesystem.hpp>
-#include <boost/date_time/gregorian/conversion.hpp>
-#include <fmt/core.h>
-#include <fmt/chrono.h>
 
 #include "storage.hpp"
 #include "project.hpp"
 #include "types.h"
 #include "ParaordenarConfig.h"
+#include "cli_visualizer.hpp"
 
 /* 2 defines */
 #define CONFIG_PATH "/.config/paraordenar"
@@ -46,15 +44,16 @@ using namespace ParaordenarCore;
 std::string paraordenar_dir; /*!< Camí al directori de configuració de l'aplicació */
 std::string mainstoragepath; /*!< Camí de l'emmagatzematge principal */
 Storage *mstr;               /*!< Punter a l'objecte global d'emmagatzemarge principal */
+CLI_Visualizer *cli;
 
 /* 6 function prototypes */
 bool pathExists(const std::string &s);
 std::string creaEmmagatzematge();
 
-void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
-void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
-void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
-void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r);
+void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 
 void read_global_state(int *, int *);
 void set_global_state_app(int);
@@ -132,13 +131,14 @@ int main(int argc, char **argv)
 
     std::vector<std::string> objectHierarchy;
     object_t subject = objectHierarchyFromOptions(&app, objectHierarchy);
+    cli = new CLI_Visualizer(!app.count("-r"));
 
     for(auto subcom : app.get_subcommands()) {
         std::string nom = subcom->get_name();
-        if(nom == "selecciona") sel_command(subcom, subject, objectHierarchy, app.count("-r"));
-        if(nom == "llista") ls_command(subcom, subject, objectHierarchy, app.count("-r"));
-        if(nom == "crea") crea_command(subcom, subject, objectHierarchy, app.count("-r"));
-        if(nom == "informacio") inf_command(subcom, subject, objectHierarchy, app.count("-r"));
+        if(nom == "selecciona") sel_command(subcom, subject, objectHierarchy);
+        if(nom == "llista") ls_command(subcom, subject, objectHierarchy);
+        if(nom == "crea") crea_command(subcom, subject, objectHierarchy);
+        if(nom == "informacio") inf_command(subcom, subject, objectHierarchy);
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -252,7 +252,7 @@ void initializeStorage() {
  * 
  * @param comm Punter a l'objecte amb la subcomanda
  */
-void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
+void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
     if(comm->count("-d")) {
         // Cas de descartar l'entorn seleccionat
@@ -290,7 +290,7 @@ void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r
  *
  * @param comm Punter a l'objecte amb la subcomanda
  */
-void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
+void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
     // De moment llistem apps
     std::vector<std::pair<std::string, bool>> apps;
@@ -310,20 +310,16 @@ void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r)
  *
  * @param comm Punter a l'objecte amb la subcomanda
  */
-void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
-
-    std::vector<std::string> objectHierarchy;
-    object_t subject = objectHierarchyFromOptions(comm, objectHierarchy);
-
+void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
     std::fstream storageconfig;
     std::string tmp_storagedir;
-    std::string description;
+    std::string description = "";
     CLI::results_t res_desc;
     Project *nova_app;
     int id_inserit;
 
-    switch (subject)
+    switch (s)
     {
     case TStorage:
         delete mstr;
@@ -338,9 +334,12 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool 
         break;
 
     case TApplication:
-        res_desc = comm->get_option("description")->results();
-        description = *(res_desc.begin());
-        nova_app = mstr->new_app(objectHierarchy.back(), description);
+        if(comm->get_option("description")->count()) {
+            res_desc = comm->get_option("description")->results();
+            description = *(res_desc.begin());
+        }
+
+        nova_app = mstr->new_app(oh.back(), description);
         std::cout << "Nou projecte creat a " << nova_app->get_path() << std::endl;
 
 
@@ -362,8 +361,11 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool 
  * @brief Funció per gestionar la comanda _informacio_
  * 
  * @param comm Punter a l'objecte amb la subcomanda
+ * @param s subjecte sobre el que es crida l'accio
+ * @param oh jerarquia d'objectes
+ * @param r indica si cal mostrar la informacio sense format
  */
-void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r) {
+void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     Project * p;
     boost::gregorian::date di;
 
@@ -379,27 +381,7 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh, bool r
         std::cerr << "El projecte no existeix!" << std::endl;
         exit(1);
     }
-
-    fmt::print("\t┌{0:─^{1}}┐\n"
-                   "\t│{2: ^{1}}│\n"
-                   "\t│{3: ^{1}}│\n"
-                   "\t└{0:─^{1}}┘\n",
-                   "", 30, p->get_name(), p->get_active() ? "Actiu" : "Arxivat");
-    fmt::print("Descripció:   {}\n"
-               "Llenguatge:   {}\n"
-               "Data d'inici: {:%m-%Y}\n",
-                p->get_description(), p->get_language(), boost::gregorian::to_tm(p->get_inici()));
-    if(!p->get_active()) {
-        fmt::print("Data fi:      {:%m-%Y}", boost::gregorian::to_tm(p->get_final()));
-    }
-    
-
-
-    // std::cout << "Projecte: " << p->get_name() << std::endl;
-    // std::cout << "\tDescripció: " << p->get_description() << std::endl;
-    // std::cout << "\tLlenguatge: " << p->get_language() << std::endl;
-    // di = p->get_inici();
-    // std::cout << "\tData d'inici: " << fmt::format("{}/{}/{}", di.day(), di.month(), di.year()) << std::endl;
+    cli->print_info_application(p);
 
     SUBJECT_SWITCH_FIN
 }
