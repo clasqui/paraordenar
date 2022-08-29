@@ -166,6 +166,9 @@ int main(int argc, char **argv)
 object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> & hierarchy) {
     object_t subject = TStorage;
     std::string o;
+    // First push back of empty value, representing storage.
+    hierarchy.push_back("");
+
     if(comm->count("-a")) {
         o = *(comm->get_option("-a")->results().begin());
         hierarchy.push_back(o);
@@ -292,15 +295,18 @@ void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
  */
 void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
-    // De moment llistem apps
-    std::vector<std::pair<std::string, bool>> apps;
-    apps = mstr->get_apps();
-    std::cout << "Llista de projectes: (" << apps.size() << " en total)" << std::endl;
-    for (auto &&p : apps)
-    {
-        std::cout << "\t-> " << p.first << std::endl;
-    }
+    Project *app;
     
+    SUBJECT_SWITCH
+
+    cli->list_applications(mstr);
+
+    SUBJECT_SWITCH_APP
+
+    app = mstr->open_app(oh[s]);
+    cli->list_vaults(app);
+    
+    SUBJECT_SWITCH_FIN
 
     return;
 }
@@ -316,14 +322,13 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     std::string tmp_storagedir;
     std::string description = "";
     CLI::results_t res_desc;
-    Project *nova_app;
+    Project *p;
+    Vault *x;
     int id_inserit;
 
-    switch (s)
-    {
-    case TStorage:
-        delete mstr;
+    SUBJECT_SWITCH
 
+        delete mstr;
         
         storageconfig.open(paraordenar_dir + "/storage", std::ios::out);
 
@@ -331,29 +336,44 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         storageconfig << tmp_storagedir << std::endl;
 
         storageconfig.close();
-        break;
 
-    case TApplication:
+    SUBJECT_SWITCH_APP
+
         if(comm->get_option("description")->count()) {
             res_desc = comm->get_option("description")->results();
             description = *(res_desc.begin());
         }
 
-        nova_app = mstr->new_app(oh.back(), description);
-        std::cout << "Nou projecte creat a " << nova_app->get_path() << std::endl;
+        p = mstr->new_app(oh.back(), description);
+        std::cout << "Nou projecte creat a " << p->get_path() << std::endl;
 
 
         if (comm->count("-s"))
         {
             // Seleccionem app a l'entorn
-            id_inserit = mstr->get_app_id(nova_app->get_name());
+            id_inserit = mstr->get_app_id(p->get_name());
             set_global_state_app(id_inserit);
         }
-        break;
 
-    default:
-        break;
-    }
+    SUBJECT_SWITCH_VAULT
+        p = mstr->open_app(oh[1]);
+        if(p == nullptr) {
+            std::cerr << "El projecte no existeix!" << std::endl;
+            exit(1);
+        }
+
+        x = p->new_vault(oh.back(), "");
+        std::cout << "Nova caixa creada a " << x->get_path() << std::endl;
+        p->save();
+
+        // if (comm->count("-s"))
+        // {
+        //     // Seleccionem caixa a l'entorn
+        //     id_inserit = p->get_vault_id(x->get_name());
+        //     set_global_state_vault(id_inserit);
+        // }
+
+    SUBJECT_SWITCH_FIN
 
 }
 

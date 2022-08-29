@@ -13,19 +13,25 @@ Les llibreries de les que depen `paraordenar` son:
 - fmt: per a la formatació del text de sortida.
 
 ## Compilació
-Per compilar l'aplicació, només fa falta executar `make` amb el target `pro`:
+L'aplicació es compila amb el sistema de build CMake.  Per fer-ho, crea un directori on construir l'aplicació, i allà crida a cmake passant el camí arrel:
 ```
-make pro
+mkdir build
+cd build
+cmake ../
 ```
 
-Si es vol compilar tot el set de llibreries (estàtica, compartida i dinàmica), es pot fer amb
+A continuacció es pot modificar l'arxiu CMakeCache.txt o utilitzar el programa ccmake per personalitzar els paràmetres de compilació.  Quan s'hagi fet això, es pot compilar fent
 ```
-make lib
+make
 ```
+
+Si es vol compilar només la llibreria, es pot fer indicant el target:
+```
+make ParaordenarCore
+```
+
 
 Finalment, per obtenir la documentació, caldrà tenir instal·lat Doxygen, i utilitzar la crida:
 ```
 make doc
 ```
-
-La crida `all` de `make` executa els tres targets indicats a sobre.

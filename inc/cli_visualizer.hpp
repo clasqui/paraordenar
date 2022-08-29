@@ -37,4 +37,7 @@ public:
     ~CLI_Visualizer();
 
     void print_info_application(Project *p);
+
+    void list_applications(Storage *s);
+    void list_vaults(Project *p);
 };

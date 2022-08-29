@@ -44,3 +44,37 @@ void CLI_Visualizer::print_info_application(Project *p) {
         boost::gregorian::to_tm(p->get_inici()), boost::gregorian::to_tm(p->get_final()));
     }
 }
+
+void CLI_Visualizer::list_applications(Storage *s) {
+    if(pr) {
+        fmt::print(fmt::emphasis::bold, "Llista de projectes: ({} en total)\n", s->get_apps().size());
+        for (auto &&p : s->get_apps())
+        {
+            if(p.second) {
+                fmt::print("\t-> {}: {}\n", p.first, fmt::styled("Actiu", fmt::fg(fmt::color::green)));
+            } else {
+                fmt::print("\t-> {}: {}\n", p.first, fmt::styled("Arxivat", fmt::fg(fmt::color::red)));
+            }
+        }
+    } else {
+        for (auto &&p : s->get_apps())
+        {
+            fmt::print("{}:{}\n", p.first, p.second);
+        }
+    }
+}
+
+void CLI_Visualizer::list_vaults(Project *p) {
+    if(pr) {
+        fmt::print(fmt::emphasis::bold, "Llista de caixes: ({} en total)\n", p->get_vaults().size());
+        for (auto &&p : p->get_vaults())
+        {
+            fmt::print("\t-> {}\n", p);
+        }
+    } else {
+        for (auto &&p : p->get_vaults())
+        {
+            fmt::print("{}\n", p);
+        }
+    }
+}

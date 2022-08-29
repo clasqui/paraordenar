@@ -115,7 +115,7 @@ class Storage {
         int get_app_id(std::string key);
 
         /**
-         * @brief Get the apps object
+         * @brief Get the list of apps
          * 
          */
         std::vector<std::pair<std::string, bool>> get_apps();

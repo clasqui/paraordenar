@@ -25,6 +25,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "pugixml.hpp"
+#include "vault.hpp"
 
 namespace ParaordenarCore {
 
@@ -54,7 +55,7 @@ namespace ParaordenarCore {
         std::string language;
         bool active;
 
-        std::vector<std::string> vaults;
+        std::set<std::string> vaults;
 
         std::fstream app_file;
         std::string app_path;
@@ -90,6 +91,36 @@ namespace ParaordenarCore {
          */
         Project(std::string name, std::string description, std::string storagePath);
 
+
+        /**
+         * @brief Crea una nova caixa dins el projecte
+         * Crea un nou objecte de caixa, i afegeix l'identificador
+         * al vector de caixes del projecte.
+         * @param name Nom de la nova caixa
+         * @param description Descripció de la caixa
+         * @return Punter a la nova caixa
+         */
+        Vault* new_vault(std::string name, std::string description);
+
+        /**
+         * @brief Carrega l'objecte d'una caixa
+         * Obté les dades d'una caixa d'aquest projecte i
+         * crea un objecte i el carrega en memòria.
+         * 
+         * @param key Nom de la caixa
+         * @return Punter a l'objecte de la caixa
+         */
+        Vault* open_vault(std::string key);
+
+
+        /**
+         * @brief Get the list of vaults
+         * Obtains a copy of the set containing the 
+         * string keys of the vaults of this project.
+         * 
+         * @return copy of the list of vaults
+         */
+        std::set<std::string> get_vaults();
         
 
         /**

@@ -17,6 +17,14 @@
                                 \
                             case TApplication:
 
+#define SUBJECT_SWITCH_VAULT    break; \
+                                \
+                            case TVault:
+
+#define SUBJECT_SWITCH_TRACE    break; \
+                                \
+                            case TTrace:
+
 #define SUBJECT_SWITCH_FIN   break; \
                             default: \
                              break; \

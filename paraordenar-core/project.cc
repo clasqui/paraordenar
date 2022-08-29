@@ -66,6 +66,35 @@ using namespace ParaordenarCore;
 
  }
 
+Vault* Project::new_vault(std::string name, std::string description)
+{
+    Vault* v = new Vault(name, description, this->app_path);
+    vaults.insert(v->get_name());
+    return v;
+}
+
+Vault* Project::open_vault(std::string key) {
+    auto el = vaults.find(key);
+    if (el == vaults.end())
+    {
+        return nullptr;
+    }
+    else
+    {
+        return new Vault(this->app_path + "/" + key);
+    }
+}
+
+std::set<std::string> Project::get_vaults() {
+    std::set<std::string> v;
+
+    for (auto it = this->vaults.begin(); it != this->vaults.end(); it++)
+    {
+        v.insert(*it);
+    }
+    return v;
+}
+
 void Project::save() {
     writeProjectDefinition();
 }
@@ -152,7 +181,7 @@ void Project::parseProjectDefinition() {
 
     for (pugi::xml_node vault_node : root.child("vaults"))
     {
-        vaults.push_back(vault_node.text().get());
+        vaults.insert(vault_node.text().get());
     }
 
     app_file.close();
