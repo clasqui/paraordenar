@@ -10,10 +10,13 @@
 #include <fmt/core.h>
 #include <fmt/chrono.h>
 #include <fmt/color.h>
+#include <fmt/ostream.h>
+#include <fmt/compile.h>
 #include <string>
 
 #include "storage.hpp"
 #include "project.hpp"
+#include "vault.hpp"
 #include <boost/date_time/gregorian/conversion.hpp>
 
 using namespace ParaordenarCore;
@@ -36,8 +39,13 @@ public:
     CLI_Visualizer(bool pretty_print);
     ~CLI_Visualizer();
 
+    void print_info_storage(Storage *strg);
     void print_info_application(Project *p);
+    void print_info_vault(Vault *x);
 
     void list_applications(Storage *s);
     void list_vaults(Project *p);
+    void list_traces(Vault *x);
+
+    void err_no_existeix(std::string que, std::string s);
 };

@@ -387,21 +387,34 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
  */
 void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     Project * p;
+    Vault *x;
     boost::gregorian::date di;
 
     
     SUBJECT_SWITCH
-    std::cout
-    << "El teu emmagatzematge es troba a:" << std::endl
-    << mstr->get_path() << std::endl;
+    cli->print_info_storage(mstr);
 
     SUBJECT_SWITCH_APP
     p = mstr->open_app(oh.back());
     if(p == nullptr) {
-        std::cerr << "El projecte no existeix!" << std::endl;
+        cli->err_no_existeix("El projecte", oh[s]);
         exit(1);
     }
     cli->print_info_application(p);
+
+    SUBJECT_SWITCH_VAULT
+    p = mstr->open_app(oh[1]);
+    if(p == nullptr) {
+        cli->err_no_existeix("El projecte", oh[1]);
+        exit(1);
+    }
+
+    x = p->open_vault(oh[s]);
+    if(x == nullptr) {
+        cli->err_no_existeix("La caixa", oh[s]);
+        exit(1);
+    }
+    cli->print_info_vault(x);
 
     SUBJECT_SWITCH_FIN
 }

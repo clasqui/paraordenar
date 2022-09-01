@@ -18,6 +18,16 @@ CLI_Visualizer::~CLI_Visualizer()
 {
 }
 
+void CLI_Visualizer::print_info_storage(Storage *strg) {
+    if(pr) {
+        fmt::print("El teu emmagatzematge es troba a {}\n", fmt::styled(strg->get_path(), fmt::emphasis::italic));
+        fmt::print("Número de projectes: {}\n", strg->get_apps().size());
+    } else {
+        fmt::print("{}\n", strg->get_path());
+        fmt::print("{}\n", strg->get_apps().size());
+    }
+}
+
 void CLI_Visualizer::print_info_application(Project *p) {
 
     if(pr) {
@@ -42,6 +52,20 @@ void CLI_Visualizer::print_info_application(Project *p) {
                    "{5:%m-%Y}\n",
         p->get_name(), p->get_active(), p->get_description(), p->get_language(), 
         boost::gregorian::to_tm(p->get_inici()), boost::gregorian::to_tm(p->get_final()));
+    }
+}
+
+void CLI_Visualizer::print_info_vault(Vault *x) {
+    if(pr) {
+        fmt::print(fmt::emphasis::bold, "{}\n", x->get_name());
+        std::cout << "Descripció: " << x->get_description() << std::endl;
+        if(!x->get_conclusions().empty()) {
+            std::cout << "Conclusions: " << x->get_conclusions() << std::endl;
+        }
+    } else {
+        std::cout << x->get_name() << std::endl;
+        std::cout << x->get_description() << std::endl;
+        std::cout << x->get_conclusions() << std::endl;
     }
 }
 
@@ -77,4 +101,11 @@ void CLI_Visualizer::list_vaults(Project *p) {
             fmt::print("{}\n", p);
         }
     }
+}
+
+void CLI_Visualizer::err_no_existeix(std::string que, std::string s) {
+    if(pr)
+        fmt::print(std::cerr, "{} {} {} no existeix.\n", fmt::styled("!!", fmt::fg(fmt::color::red) | fmt::emphasis::bold), que, fmt::styled(s, fmt::emphasis::italic));
+    else
+        fmt::print(std::cerr, "!! {} {} no existeix.\n", que, s);
 }
