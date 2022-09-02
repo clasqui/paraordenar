@@ -24,6 +24,7 @@
 #include <boost/regex.hpp>
 
 #include "pugixml.hpp"
+#include "experiment.hpp"
 
 namespace ParaordenarCore {
 
@@ -43,7 +44,7 @@ namespace ParaordenarCore {
         std::string description;
         std::string conclusions;
 
-        std::vector<std::string> traces;
+        std::map<std::string, ExperimentType> experiments;
 
         std::fstream vault_file;
         std::string vault_path;
@@ -96,6 +97,35 @@ namespace ParaordenarCore {
         void set_conclusions(std::string conclusions);
         ///@}
     
+        /**
+         * @brief Crea un nou experiment dins la caixa
+         * Crea un nou objecte d'experiment, i afegeix 
+         * l'identificador al vector d'experiments de 
+         * la caixa.
+         * 
+         * @param name Nom del nou experiment
+         * @param description Tipus d'experiment
+         * @return Punter al nou objecte d'experiment
+         */
+        Experiment* new_experiment(std::string name, ExperimentType t);
+
+        /**
+         * @brief Carrega l'objecte d'un experiment
+         * Obté les dades d'un experiment d'aquesta 
+         * caixa i crea un objecte i el carrega 
+         * en memòria.
+         * 
+         * @param key Nom de l'experiment
+         * @return Punter a l'objecte de l'experiment
+         */
+        Experiment* open_experiment(std::string key);
+
+        /**
+         * @brief Obté la llista d'experiments
+         * Fa una còpia del map d'experiments a 
+         * un nou map, i el retorna.
+         */
+        std::map<std::string, ExperimentType> get_experiments();
 
         /**
          * @brief Guarda la informació de la caixa en disc

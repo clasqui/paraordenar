@@ -25,6 +25,10 @@
                                 \
                             case TTrace:
 
+#define SUBJECT_SWITCH_WALLTIME    break; \
+                                \
+                            case TWalltime:
+
 #define SUBJECT_SWITCH_FIN   break; \
                             default: \
                              break; \
@@ -78,9 +82,10 @@
          */
         typedef enum
         {
-            TStorage,     /*!< Representa el nivell Storage */
-            TApplication, /*!< Representa el nivell Project */
-            TVault,       /*!< Representa el nivell Vault */
-            TTrace        /*!< Representa el nivell Trace */
+            TStorage,      /*!< Representa el nivell Storage */
+            TApplication,  /*!< Representa el nivell Project */
+            TVault,        /*!< Representa el nivell Vault */
+            TTrace,        /*!< Representa el nivell Experiment::Trace */
+            TWalltime,     /*!< Representa el nivell Experiment::Walltime */
         } object_t;
     }

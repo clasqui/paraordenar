@@ -182,6 +182,12 @@ object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> & h
                 hierarchy.push_back(o);
                 subject = TTrace;
                 return subject;
+            } else if(comm->count("-w")) {
+                o = *(comm->get_option("-w")->results().begin());
+                hierarchy.push_back("");  // We leave a blank space in hierarchy to match with type integer value
+                hierarchy.push_back(o);
+                subject = TWalltime;
+                return subject;
             } else {
                 return subject;
             }
@@ -324,6 +330,7 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     CLI::results_t res_desc;
     Project *p;
     Vault *x;
+    Experiment *tw;
     int id_inserit;
 
     SUBJECT_SWITCH
@@ -348,12 +355,12 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         std::cout << "Nou projecte creat a " << p->get_path() << std::endl;
 
 
-        if (comm->count("-s"))
-        {
-            // Seleccionem app a l'entorn
-            id_inserit = mstr->get_app_id(p->get_name());
-            set_global_state_app(id_inserit);
-        }
+        // if (comm->count("-s"))
+        // {
+        //     // Seleccionem app a l'entorn
+        //     id_inserit = mstr->get_app_id(p->get_name());
+        //     set_global_state_app(id_inserit);
+        // }
 
     SUBJECT_SWITCH_VAULT
         p = mstr->open_app(oh[1]);

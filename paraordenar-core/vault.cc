@@ -88,14 +88,15 @@ void Vault::writeVaultDefinition() {
     pugi::xml_node node_lanugage = info.append_child("conclusions");
     node_lanugage.append_child(pugi::node_pcdata).set_value(conclusions.c_str());
 
-    pugi::xml_node traces_node = root.append_child("traces");
+    pugi::xml_node experiments_node = root.append_child("experiments");
 
-    for (auto it = traces.begin(); it != traces.end(); it++)
+    for (auto it = experiments.begin(); it != experiments.end(); it++)
     {
-        std::string name = *it;
+        std::string name = it->first;
 
-        pugi::xml_node vault_node = traces_node.append_child("trace");
-        vault_node.append_child(pugi::node_pcdata).set_value(name.c_str());
+        pugi::xml_node exp_node = experiments_node.append_child("experiment");
+        exp_node.append_child(pugi::node_pcdata).set_value(name.c_str());
+        exp_node.append_attribute("type") = it->second;
     }
 
     vault_file.open(vault_path + "/.provault", std::ios::out | std::ios::trunc);
@@ -131,9 +132,9 @@ void Vault::parseVaultDefinition() {
         throw PROException(ExceptionType::EMalformedStorage, "No es troba el parametre identificador de caixa");
     }
 
-    for (pugi::xml_node vault_node : root.child("traces"))
+    for (pugi::xml_node exp_node : root.child("experiments"))
     {
-        traces.push_back(vault_node.text().get());
+        experiments.insert(std::make_pair(exp_node.text().get(), ExperimentType(exp_node.attribute("type").as_int())));
     }
 
     vault_file.close();
