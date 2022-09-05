@@ -28,6 +28,7 @@
 
 #include "storage.hpp"
 #include "project.hpp"
+#include "trace.hpp"
 #include "types.h"
 #include "ParaordenarConfig.h"
 #include "cli_visualizer.hpp"
@@ -54,6 +55,7 @@ void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 
 void read_global_state(int *, int *);
 void set_global_state_app(int);
@@ -91,6 +93,8 @@ int main(int argc, char **argv)
 
     CLI::App *mod = app.add_subcommand("modifica", "Modifica una aplicació, caixa o traça")
     ->alias("mod")->fallthrough();
+    mod->add_option("clau", "Clau del paràmetre a modificar")->required();
+    mod->add_option("valor", "Nou valor pel paràmetre")->required();
 
     CLI::App *arx = app.add_subcommand("arxiva", "Arxiva una aplicació")
     ->alias("arx")->fallthrough();
@@ -139,6 +143,7 @@ int main(int argc, char **argv)
         if(nom == "llista") ls_command(subcom, subject, objectHierarchy);
         if(nom == "crea") crea_command(subcom, subject, objectHierarchy);
         if(nom == "informacio") inf_command(subcom, subject, objectHierarchy);
+        if(nom == "modifica") mod_command(subcom, subject, objectHierarchy);
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -301,7 +306,8 @@ void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
  */
 void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
-    Project *app;
+    Project *p;
+    Vault *x;
     
     SUBJECT_SWITCH
 
@@ -309,8 +315,25 @@ void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
     SUBJECT_SWITCH_APP
 
-    app = mstr->open_app(oh[s]);
-    cli->list_vaults(app);
+     p = mstr->open_app(oh[1]);
+    if(p == nullptr) {
+        cli->err_no_existeix("El projecte", oh[1]);
+        exit(1);
+    }
+    cli->list_vaults(p);
+
+    SUBJECT_SWITCH_VAULT
+    p = mstr->open_app(oh[1]);
+    if(p == nullptr) {
+        cli->err_no_existeix("El projecte", oh[1]);
+        exit(1);
+    }
+    x = p->open_vault(oh[2]);
+    if(x == nullptr) {
+        cli->err_no_existeix("La caixa", oh[2]);
+        exit(1);
+    }
+    cli->list_experiments(x);
     
     SUBJECT_SWITCH_FIN
 
@@ -330,7 +353,7 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     CLI::results_t res_desc;
     Project *p;
     Vault *x;
-    Experiment *tw;
+    Trace *t;
     int id_inserit;
 
     SUBJECT_SWITCH
@@ -380,9 +403,98 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         //     set_global_state_vault(id_inserit);
         // }
 
+    SUBJECT_SWITCH_TRACE
+        p = mstr->open_app(oh[1]);
+        if(p == nullptr) {
+            cli->err_no_existeix("El projecte", oh[1]);
+            exit(1);
+        }
+        x = p->open_vault(oh[2]);
+        if(x == nullptr) {
+            cli->err_no_existeix("La caixa", oh[2]);
+            exit(1);
+        }
+        t = (Trace *)x->new_experiment(oh[s], ExperimentType::Tracing);
+        x->save();
+        fmt::print("Nova traça creada a {} amb el nom {}", x->get_path(), t->get_name());
+
+
     SUBJECT_SWITCH_FIN
 
 }
+
+/**
+ * @brief Funció per gestionar la comanda _modifica_
+ *
+ * @param comm Punter a l'objecte amb la subcomanda
+ */
+void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
+
+    std::fstream storageconfig;
+    std::string tmp_storagedir;
+    std::string description = "";
+    CLI::results_t res_desc;
+    Project *p;
+    Vault *x;
+    Trace *t;
+    int id_inserit;
+
+    SUBJECT_SWITCH
+
+        delete mstr;
+        
+        storageconfig.open(paraordenar_dir + "/storage", std::ios::out);
+
+        std::cout << "Indica el camí de l'emmagatzematge que vols obrir: " << std::endl << "> " ;
+        std::cin >> tmp_storagedir;
+
+        try {
+        mstr = new Storage(tmp_storagedir);
+        }
+        catch(PROException &e) {
+            std::cout << "Error en carregar l'emmagatzematge: " << std::endl;
+            std::cout << "\t-> " << e.message << std::endl;
+            exit(1);
+        }
+        mainstoragepath = tmp_storagedir;
+        storageconfig << tmp_storagedir << std::endl;
+
+        storageconfig.close();
+
+    SUBJECT_SWITCH_APP
+
+
+
+    SUBJECT_SWITCH_VAULT
+        p = mstr->open_app(oh[1]);
+        if(p == nullptr) {
+            std::cerr << "El projecte no existeix!" << std::endl;
+            exit(1);
+        }
+
+
+    SUBJECT_SWITCH_TRACE
+        p = mstr->open_app(oh[1]);
+        if(p == nullptr) {
+            cli->err_no_existeix("El projecte", oh[1]);
+            exit(1);
+        }
+        x = p->open_vault(oh[2]);
+        if(x == nullptr) {
+            cli->err_no_existeix("La caixa", oh[2]);
+            exit(1);
+        }
+
+        t = (Trace *)x->open_experiment(oh[s]);
+
+
+
+
+
+    SUBJECT_SWITCH_FIN
+
+}
+
 
 /**
  * @brief Funció per gestionar la comanda _informacio_

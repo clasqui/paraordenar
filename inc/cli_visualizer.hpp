@@ -45,7 +45,7 @@ public:
 
     void list_applications(Storage *s);
     void list_vaults(Project *p);
-    void list_traces(Vault *x);
+    void list_experiments(Vault *x);
 
     void err_no_existeix(std::string que, std::string s);
 };

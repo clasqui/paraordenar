@@ -89,6 +89,16 @@ Experiment* Vault::open_experiment(std::string key) {
     }
 }
 
+std::map<std::string, ExperimentType> Vault::get_experiments() {
+    std::map<std::string, ExperimentType> m;
+
+    for (auto it = this->experiments.begin(); it != this->experiments.end(); it++)
+    {
+        m.insert(std::make_pair(it->first, it->second));
+    }
+    return m;
+}
+
 void Vault::save() {
     writeVaultDefinition();
 }
