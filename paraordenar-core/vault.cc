@@ -22,6 +22,8 @@
  #include <boost/filesystem.hpp>
  #include <boost/regex.hpp>
 
+ #include "trace.hpp"
+
 using namespace ParaordenarCore;
 
  Vault::Vault(std::string name, std::string description, std::string applicationPath) {
@@ -61,6 +63,31 @@ using namespace ParaordenarCore;
     parseVaultDefinition();
 
  }
+
+Experiment* Vault::new_experiment(std::string name, ExperimentType t) {
+    Experiment *tw;
+    if(t == ExperimentType::Tracing) {
+        tw = new Trace(name, this->vault_path);
+    }
+
+    experiments.insert(std::make_pair(tw->get_name(), tw->get_type()));
+}
+
+Experiment* Vault::open_experiment(std::string key) {
+    auto el = experiments.find(key);
+    if (el == experiments.end())
+    {
+        return nullptr;
+    }
+    else
+    {
+        if(el->second == ExperimentType::Tracing) {
+            return new Trace(this->vault_path + "/." + key + ".proexp");
+        } else {
+            return nullptr;
+        }
+    }
+}
 
 void Vault::save() {
     writeVaultDefinition();

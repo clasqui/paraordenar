@@ -28,7 +28,7 @@
 namespace ParaordenarCore {
 
     typedef enum {
-        Trace,
+        Tracing,
         Walltime
     } ExperimentType;
 
@@ -69,8 +69,8 @@ namespace ParaordenarCore {
          * de fitxers.
          */
         ///@{
-        virtual void parseExperimentDefinition();
-        virtual void writeExperimentDefinition();
+        virtual void parseExperimentDefinition() = 0;
+        virtual void writeExperimentDefinition() = 0;
         ///@}
 
     public:
@@ -83,10 +83,11 @@ namespace ParaordenarCore {
          * als membres de la classe Project.
          */
         ///@{
-        const std::string get_path();
-        const std::string get_name();
-        const std::string get_description();
-        const std::string get_logfile_name();
+        const std::string    get_path();
+        const std::string    get_name();
+        const std::string    get_description();
+        const std::string    get_logfile_name();
+        const ExperimentType get_type();
 
         void set_description(std::string desc);
         void set_logfile_name(std::string n);
@@ -96,7 +97,7 @@ namespace ParaordenarCore {
          * @brief Guarda la informació de l'experiment en disc
          * La implementació depen de la subclasse.
          */
-        virtual void save();
+        virtual void save() = 0;
 
     };
 

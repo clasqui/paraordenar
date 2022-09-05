@@ -68,6 +68,10 @@ const std::string Experiment::get_logfile_name() {
     return log_file;
 }
 
+const ExperimentType Experiment::get_type() {
+    return type;
+}
+
 
 void Experiment::set_description(std::string desc) {
     this->description = desc;

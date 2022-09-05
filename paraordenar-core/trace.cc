@@ -17,7 +17,7 @@
 using namespace ParaordenarCore;
 
 Trace::Trace(std::string name, std::string vaultPath) : 
-    Experiment(name, ExperimentType::Trace, vaultPath) {
+    Experiment(name, ExperimentType::Tracing, vaultPath) {
         // Aqui posem els valors especifics de la subclasse trace
 
     this->mpi_tasks = 1;
@@ -98,7 +98,7 @@ void Trace::parseExperimentDefinition() {
     this->description = info.child("description").text().get();
 
     this->type = ExperimentType(info.child("type").text().as_int());
-    if(this->type != ExperimentType::Trace) {
+    if(this->type != ExperimentType::Tracing) {
         throw PROException(ExceptionType::EMalformedStorage, "L'experiment no es una traça");
     }
 

@@ -33,7 +33,7 @@ namespace ParaordenarCore {
      * TODO: descripcio
      * 
      */
-    class Trace : Experiment
+    class Trace : public Experiment
     {
     private:
         int omp_threads;
@@ -49,8 +49,8 @@ namespace ParaordenarCore {
          * de fitxers.
          */
         ///@{
-        void parseExperimentDefinition();
-        void writeExperimentDefinition();
+        virtual void parseExperimentDefinition();
+        virtual void writeExperimentDefinition();
         ///@}
 
 
@@ -77,7 +77,7 @@ namespace ParaordenarCore {
          * La implementació ara mateix només crida la funció 
          * d'escriure en disc l'arxiu XML.
          */
-        void save();
+        virtual void save();
 
     };
 
