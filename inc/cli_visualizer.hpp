@@ -17,6 +17,7 @@
 #include "storage.hpp"
 #include "project.hpp"
 #include "vault.hpp"
+#include "trace.hpp"
 #include <boost/date_time/gregorian/conversion.hpp>
 
 using namespace ParaordenarCore;
@@ -42,6 +43,7 @@ public:
     void print_info_storage(Storage *strg);
     void print_info_application(Project *p);
     void print_info_vault(Vault *x);
+    void print_info_trace(Trace *t);
 
     void list_applications(Storage *s);
     void list_vaults(Project *p);

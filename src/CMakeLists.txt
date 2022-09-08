@@ -19,6 +19,6 @@ target_link_libraries(Paraordenar PUBLIC
 
 
 install(TARGETS Paraordenar DESTINATION bin)
-install(FILES "inc/TutorialConfig.h" "inc/CLI11.hpp"
+install(FILES "../inc/cli_visualizer.hpp" "../inc/CLI11.hpp"
   DESTINATION include
   )

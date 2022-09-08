@@ -27,7 +27,7 @@ using namespace ParaordenarCore;
 Experiment::Experiment(std::string name, ExperimentType type, std::string vaultPath) {
 
      // Comprovem nom experiment
-    static const boost::regex e("^\\w+$");
+    static const boost::regex e("^[\\w-]+$");
     if(!boost::regex_match(name, e)) {
         throw PROException(ExceptionType::ENameNotValid, "El nom per l'experiment no és vàlid");
     }
@@ -35,7 +35,8 @@ Experiment::Experiment(std::string name, ExperimentType type, std::string vaultP
     this->name = name;
     this->type = type;
     this->description = "";
-
+    
+    this->base_path = vaultPath;
     this-> complete_path = vaultPath + "/" + "." + name + ".proexp";
 
 
@@ -57,6 +58,11 @@ Experiment::Experiment(std::string name, ExperimentType type, std::string vaultP
 const std::string Experiment::get_path() {
     return complete_path;
 }
+
+const std::string Experiment::get_base_path() {
+    return base_path;
+}
+
 const std::string Experiment::get_name() {
     return name;
 }
@@ -80,3 +86,6 @@ void Experiment::set_description(std::string desc) {
 void Experiment::set_logfile_name(std::string n) {
     this->log_file = n;
 }
+
+std::string Experiment::ExperimentTypeNames[2] = {"Traceig", "Temps"};
+std::string Experiment::ResourceTypeNames[4] = {"PRV", "CSV", "Registre", "CFG Paraver"};

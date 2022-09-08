@@ -69,6 +69,23 @@ void CLI_Visualizer::print_info_vault(Vault *x) {
     }
 }
 
+void CLI_Visualizer::print_info_trace(Trace *t) {
+    if(pr) {
+        fmt::print("\t┌{0:-^{1}}┐\n"
+                "\t│{2: ^{1}}│\n"
+                "\t│{3: ^{1}}│\n"
+                "\t└{0:-^{1}}┘\n",
+                "", 30, fmt::styled(t->get_name(), fmt::emphasis::bold), Experiment::ExperimentTypeNames[t->get_type()]);
+    } else {
+        fmt::print("{0}\n"
+                   "{1}\n"
+                   "{2}\n"
+                   "{3}\n",
+        t->get_name(), Experiment::ExperimentTypeNames[t->get_type()], t->get_base_path(), t->get_description());
+    }
+}
+
+
 void CLI_Visualizer::list_applications(Storage *s) {
     if(pr) {
         fmt::print(fmt::emphasis::bold, "Llista de projectes: ({} en total)\n", s->get_apps().size());

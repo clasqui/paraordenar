@@ -35,7 +35,8 @@ namespace ParaordenarCore {
     typedef enum {
         PrvFile,
         CsvFile,
-        LogFile
+        LogFile,
+        CfgFile
     } ResourceType;
 
 
@@ -59,6 +60,7 @@ namespace ParaordenarCore {
         std::string log_file;
 
         std::fstream experiment_file;
+        std::string base_path;
         std::string complete_path;
         std::map<std::string, std::string> params;
 
@@ -84,6 +86,7 @@ namespace ParaordenarCore {
          */
         ///@{
         const std::string    get_path();
+        const std::string    get_base_path();
         const std::string    get_name();
         const std::string    get_description();
         const std::string    get_logfile_name();
@@ -98,6 +101,9 @@ namespace ParaordenarCore {
          * La implementació depen de la subclasse.
          */
         virtual void save() = 0;
+
+        static std::string ExperimentTypeNames[2];
+        static std::string ResourceTypeNames[4];
 
     };
 

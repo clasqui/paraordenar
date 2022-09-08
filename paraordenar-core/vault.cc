@@ -71,6 +71,8 @@ Experiment* Vault::new_experiment(std::string name, ExperimentType t) {
     }
 
     experiments.insert(std::make_pair(tw->get_name(), tw->get_type()));
+    
+    return tw;
 }
 
 Experiment* Vault::open_experiment(std::string key) {

@@ -78,7 +78,8 @@ int main(int argc, char **argv)
     
     app.add_option("-a", "Aplicació");
     app.add_option("-x", "Caixa");
-    app.add_option("-t", "Traça");
+    app.add_option("-t", "Experiment de Traceig");
+    app.add_option("-w", "Experiment de Walltime");
 
     CLI::App *crea = app.add_subcommand("crea", "Crea un emmagatzematge nou, aplicació, caixa, o traça")
     ->alias("cre")->fallthrough();
@@ -416,7 +417,7 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         }
         t = (Trace *)x->new_experiment(oh[s], ExperimentType::Tracing);
         x->save();
-        fmt::print("Nova traça creada a {} amb el nom {}", x->get_path(), t->get_name());
+        fmt::print("Nova traça creada a {} amb el nom {}\n", x->get_path(), t->get_name());
 
 
     SUBJECT_SWITCH_FIN
@@ -508,7 +509,7 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     Project * p;
     Vault *x;
     boost::gregorian::date di;
-
+    Trace *t;
     
     SUBJECT_SWITCH
     cli->print_info_storage(mstr);
@@ -534,6 +535,36 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         exit(1);
     }
     cli->print_info_vault(x);
+
+    SUBJECT_SWITCH_TRACE
+        p = mstr->open_app(oh[1]);
+    if(p == nullptr) {
+        cli->err_no_existeix("El projecte", oh[1]);
+        exit(1);
+    }
+
+    x = p->open_vault(oh[2]);
+    if(x == nullptr) {
+        cli->err_no_existeix("La caixa", oh[2]);
+        exit(1);
+    }
+
+    try
+    {
+        t = (Trace *)x->open_experiment(oh[s]);
+    }
+    catch(const PROException& e)
+    {
+        std::cerr << e.message << '\n';
+    }
+    
+    if(t == nullptr) {
+        cli->err_no_existeix("La traça", oh[s]);
+        exit(1);
+    }
+    cli->print_info_trace(t);
+
+
 
     SUBJECT_SWITCH_FIN
 }
