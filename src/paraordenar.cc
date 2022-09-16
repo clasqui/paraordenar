@@ -556,6 +556,7 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     catch(const PROException& e)
     {
         std::cerr << e.message << '\n';
+        exit(1);
     }
     
     if(t == nullptr) {

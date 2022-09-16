@@ -21,6 +21,7 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <filesystem>
 
 
 #include "types.h"
@@ -60,8 +61,8 @@ namespace ParaordenarCore {
         std::string log_file;
 
         std::fstream experiment_file;
-        std::string base_path;
-        std::string complete_path;
+        std::filesystem::path base_path;
+        std::filesystem::path complete_path;
         std::map<std::string, std::string> params;
 
         /**

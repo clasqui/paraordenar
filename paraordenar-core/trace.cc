@@ -17,7 +17,7 @@
 using namespace ParaordenarCore;
 
 Trace::Trace(std::string name, std::string vaultPath) : 
-    Experiment(name, ExperimentType::Tracing, vaultPath) {
+    Experiment::Experiment(name, ExperimentType::Tracing, vaultPath) {
         // Aqui posem els valors especifics de la subclasse trace
 
     this->mpi_tasks = 1;
@@ -29,7 +29,7 @@ Trace::Trace(std::string name, std::string vaultPath) :
 
 
 Trace::Trace(std::string path) :
-    Experiment(path) {
+    Experiment::Experiment(path) {
 
     parseExperimentDefinition();
 }

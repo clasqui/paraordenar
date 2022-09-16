@@ -37,10 +37,7 @@ Experiment::Experiment(std::string name, ExperimentType type, std::string vaultP
     this->description = "";
     
     this->base_path = vaultPath;
-    this-> complete_path = vaultPath + "/" + "." + name + ".proexp";
-
-
-    //writeExperimentDefinition();
+    this->complete_path = vaultPath + "/" + "." + name + ".proexp";
 
 }
 
@@ -50,7 +47,10 @@ Experiment::Experiment(std::string name, ExperimentType type, std::string vaultP
         throw PROException(ExceptionType::EStorageNotExists, "No existeix un experiment de Paraordenar al directori definit.");
     }
 
-    //parseExperimentDefinition();
+    this->base_path = path;
+    base_path.remove_filename();
+
+    this->complete_path = path;
 
 }
 
@@ -66,6 +66,7 @@ const std::string Experiment::get_base_path() {
 const std::string Experiment::get_name() {
     return name;
 }
+
 const std::string Experiment::get_description() {
     return description;
 }
