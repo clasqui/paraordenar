@@ -121,12 +121,21 @@ void CLI_Visualizer::list_vaults(Project *p) {
 }
 
 void CLI_Visualizer::list_experiments(Vault *x) {
-        if(pr) {
-        fmt::print(fmt::emphasis::bold, "Llista d'experiments: ({} en total)\n", x->get_experiments().size());
+    Experiment *experiment;
+    if(pr) {
+        std::cout << std::endl;
+        fmt::print(fmt::emphasis::bold, "{:^60}\n", "Llista d'experiments");
+        fmt::print("{:^32}|{:^10}|{:^16}\n", "Nom", "Tipus", "Data");
+        fmt::print("{:-^60}\n", "");
         for (auto &&tw : x->get_experiments())
         {
-            fmt::print("\t-> {}: {}\n", tw.first, tw.second);
+            experiment = x->open_experiment(tw.first);
+            fmt::print(" {:<31}| {:<9}| {:%d-%m-%Y}\n", tw.first, 
+                Experiment::ExperimentTypeNames[tw.second], 
+                boost::gregorian::to_tm(experiment->get_date()));
+            delete experiment;
         }
+        std::cout << std::endl;
     } else {
         for (auto &&tw : x->get_experiments())
         {
@@ -141,4 +150,11 @@ void CLI_Visualizer::err_no_existeix(std::string que, std::string s) {
         fmt::print(std::cerr, "{} {} {} no existeix.\n", fmt::styled("!!", fmt::fg(fmt::color::red) | fmt::emphasis::bold), que, fmt::styled(s, fmt::emphasis::italic));
     else
         fmt::print(std::cerr, "!! {} {} no existeix.\n", que, s);
+}
+
+void CLI_Visualizer::error_generic(std::string missatge) {
+    if(pr)
+        fmt::print(std::cerr, "{} {}\n", fmt::styled("!!", fmt::fg(fmt::color::red) | fmt::emphasis::bold), missatge);
+    else
+        fmt::print(std::cerr, "!! {}\n", missatge);
 }

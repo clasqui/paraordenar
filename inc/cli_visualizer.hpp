@@ -50,4 +50,5 @@ public:
     void list_experiments(Vault *x);
 
     void err_no_existeix(std::string que, std::string s);
+    void error_generic(std::string missatge)
 };

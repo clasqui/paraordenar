@@ -56,6 +56,7 @@ void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 
 void read_global_state(int *, int *);
 void set_global_state_app(int);
@@ -96,6 +97,13 @@ int main(int argc, char **argv)
     ->alias("mod")->fallthrough();
     mod->add_option("clau", "Clau del paràmetre a modificar")->required();
     mod->add_option("valor", "Nou valor pel paràmetre")->required();
+
+    CLI::App *add = app.add_subcommand("afegeix", "Afegeix un recurs a un experiment")
+    ->alias("add")->fallthrough();
+    mod->add_option("arxiu", "Nom del recurs a afegir")->required();
+    mod->add_option("etiqueta", "Etiqueta del recurs")->required();
+    mod->add_option("n_threads", "Número de threads si varia de l'experiment base");
+    mod->add_option("n_ranks", "Número de MPI ranks si varia de l'experiment base");
 
     CLI::App *arx = app.add_subcommand("arxiva", "Arxiva una aplicació")
     ->alias("arx")->fallthrough();
@@ -145,6 +153,7 @@ int main(int argc, char **argv)
         if(nom == "crea") crea_command(subcom, subject, objectHierarchy);
         if(nom == "informacio") inf_command(subcom, subject, objectHierarchy);
         if(nom == "modifica") mod_command(subcom, subject, objectHierarchy);
+        if(nom == "afegeix") add_command(subcom, subject, objectHierarchy);
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -496,6 +505,52 @@ void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
 }
 
+/**
+ * @brief Funció per gestionar la comanda _afegeix_
+ *
+ * @param comm Punter a l'objecte amb la subcomanda
+ * @param s subjecte sobre el que es crida l'accio
+ * @param oh jerarquia d'objectes
+ */
+void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
+
+    Project *p;
+    Vault *x;
+    Trace *t;
+
+    if(s != TTrace || s != TWalltime) {
+        cli->error_generic("La comanda 'afegeix' només es pot utilitzar sobre un experiment.");
+        exit(1);
+    }
+
+    SUBJECT_SWITCH
+
+    SUBJECT_SWITCH_APP
+
+    SUBJECT_SWITCH_VAULT
+
+    SUBJECT_SWITCH_TRACE
+        p = mstr->open_app(oh[1]);
+        if(p == nullptr) {
+            cli->err_no_existeix("El projecte", oh[1]);
+            exit(1);
+        }
+        x = p->open_vault(oh[2]);
+        if(x == nullptr) {
+            cli->err_no_existeix("La caixa", oh[2]);
+            exit(1);
+        }
+
+        t = (Trace *)x->open_experiment(oh[s]);
+
+
+
+
+
+    SUBJECT_SWITCH_FIN
+
+}
+
 
 /**
  * @brief Funció per gestionar la comanda _informacio_
@@ -503,7 +558,6 @@ void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
  * @param comm Punter a l'objecte amb la subcomanda
  * @param s subjecte sobre el que es crida l'accio
  * @param oh jerarquia d'objectes
- * @param r indica si cal mostrar la informacio sense format
  */
 void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     Project * p;

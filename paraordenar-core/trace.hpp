@@ -20,12 +20,20 @@
 
 #pragma once
 
-#include <set>
+#include <map>
 
 #include "experiment.hpp"
 #include "types.h"
 
 namespace ParaordenarCore {
+
+    struct prv_metadata {
+        std::string label;
+        int n_threads;
+        int n_ranks;
+    };
+
+    typedef std::map<std::string, struct prv_metadata> prv_dict_t;
 
     /**
      * @brief La classe Trace es una subclasse de Experiment que representa una traça
@@ -39,7 +47,8 @@ namespace ParaordenarCore {
         int omp_threads;
         int mpi_tasks;
 
-        std::set<std::string> prv_resources;
+        //std::set<std::string> prv_resources;
+        prv_dict_t prv_resources;
 
     protected:
         /**
@@ -71,6 +80,23 @@ namespace ParaordenarCore {
             void set_omp_threads(int t);
             void set_mpi_tasks(int t);
         ///@}
+
+        /**
+         * @brief Afegeix un recurs PRV a la llista de l'experiment de traceig
+         * 
+         * @param key nom del recurs (nom de l'arxiu)
+         * @param label etiqueta del prv
+         * @param nthr numero de threads (valor per defecte si=0)
+         * @param nmpi numero de mpi ranks (valor per defecte si=0)
+         */
+        void add_prv(std::string key, std::string label, int nthr, int nmpi);
+
+        /**
+         * @brief Obté la llista de recursos PRV
+         * 
+         * @return prv_dict_t 
+         */
+        const prv_dict_t get_list_prv();
 
         /**
          * @brief Guarda la informació de l'experiment en disc

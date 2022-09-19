@@ -35,6 +35,7 @@ Experiment::Experiment(std::string name, ExperimentType type, std::string vaultP
     this->name = name;
     this->type = type;
     this->description = "";
+    this->date = boost::gregorian::date(boost::gregorian::day_clock::local_day());
     
     this->base_path = vaultPath;
     this->complete_path = vaultPath + "/" + "." + name + ".proexp";
@@ -52,6 +53,10 @@ Experiment::Experiment(std::string name, ExperimentType type, std::string vaultP
 
     this->complete_path = path;
 
+}
+
+void Experiment::save() {
+    this->writeExperimentDefinition();
 }
 
 
@@ -78,6 +83,11 @@ const std::string Experiment::get_logfile_name() {
 const ExperimentType Experiment::get_type() {
     return type;
 }
+
+const boost::gregorian::date Experiment::get_date() {
+    return date;
+}
+
 
 
 void Experiment::set_description(std::string desc) {

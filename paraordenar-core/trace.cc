@@ -55,6 +55,8 @@ void Trace::writeExperimentDefinition() {
     node_description.append_child(pugi::node_pcdata).set_value(description.c_str());
     pugi::xml_node node_type = info.append_child("type");
     node_type.append_child(pugi::node_pcdata).set_value(std::to_string(type).c_str());
+    pugi::xml_node node_date = info.append_child("date");
+    node_date.append_child(pugi::node_pcdata).set_value(boost::gregorian::to_iso_string(date).c_str());
 
     pugi::xml_node node_threads = info.append_child("threads");
     node_threads.append_child(pugi::node_pcdata).set_value(std::to_string(omp_threads).c_str());
@@ -65,11 +67,14 @@ void Trace::writeExperimentDefinition() {
 
     for (auto it = prv_resources.begin(); it != prv_resources.end(); it++)
     {
-        std::string name = *it;
+        std::string name = it->first;
 
         pugi::xml_node prv_node = resources.append_child("res");
         prv_node.append_child(pugi::node_pcdata).set_value(name.c_str());
         prv_node.append_attribute("type") = ResourceType::PrvFile;
+        prv_node.append_attribute("label") = it->second.label.c_str();
+        prv_node.append_attribute("n_threads") = it->second.n_threads;
+        prv_node.append_attribute("n_ranks") = it->second.n_ranks;
     }
 
     pugi::xml_node log_node = resources.append_child("res");
@@ -102,6 +107,10 @@ void Trace::parseExperimentDefinition() {
         throw PROException(ExceptionType::EMalformedStorage, "L'experiment no es una traça");
     }
 
+    this->date = info.child("date") ? 
+        boost::gregorian::from_undelimited_string(info.child("date").text().get()) : 
+        boost::gregorian::date(1970, 1, 1);
+    
     this->omp_threads = info.child("threads").text().as_int();
     this->mpi_tasks = info.child("tasks").text().as_int();
 
@@ -120,7 +129,13 @@ void Trace::parseExperimentDefinition() {
     {
         ResourceType t = ResourceType(res_node.attribute("type").as_int());
         if(t == ResourceType::PrvFile) {
-            prv_resources.insert(res_node.text().get());
+            prv_metadata meta = {
+                res_node.attribute("label").as_string(),
+                res_node.attribute("n_threads").as_int(), 
+                res_node.attribute("n_ranks").as_int()
+            };
+            std::pair<std::string, struct prv_metadata> entry = std::make_pair(res_node.text().get(), meta);
+            prv_resources.insert(entry);
         } else if (t == ResourceType::LogFile) {
             this->log_file = res_node.text().get();
         }
@@ -128,6 +143,21 @@ void Trace::parseExperimentDefinition() {
 
     experiment_file.close();
 }
+
+void Trace::add_prv(std::string key, std::string label, int nthr, int nmpi) {
+    prv_metadata meta = {
+        label,
+        nthr, 
+        nmpi
+    };
+    std::pair<std::string, struct prv_metadata> entry = std::make_pair(key, meta);
+    prv_resources.insert(entry);
+}
+
+const prv_dict_t Trace::get_list_prv() {
+    return prv_resources;
+}
+
 
 void Trace::save() {
     this->writeExperimentDefinition();

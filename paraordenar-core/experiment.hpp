@@ -22,6 +22,7 @@
 #include <string>
 #include <map>
 #include <filesystem>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 
 #include "types.h"
@@ -57,6 +58,7 @@ namespace ParaordenarCore {
         ExperimentType type;
         std::string name;
         std::string description;
+        boost::gregorian::date date;
 
         std::string log_file;
 
@@ -86,12 +88,13 @@ namespace ParaordenarCore {
          * als membres de la classe Project.
          */
         ///@{
-        const std::string    get_path();
-        const std::string    get_base_path();
-        const std::string    get_name();
-        const std::string    get_description();
-        const std::string    get_logfile_name();
-        const ExperimentType get_type();
+        const std::string               get_path();
+        const std::string               get_base_path();
+        const std::string               get_name();
+        const std::string               get_description();
+        const boost::gregorian::date    get_date();
+        const std::string               get_logfile_name();
+        const ExperimentType            get_type();
 
         void set_description(std::string desc);
         void set_logfile_name(std::string n);
@@ -101,7 +104,7 @@ namespace ParaordenarCore {
          * @brief Guarda la informació de l'experiment en disc
          * La implementació depen de la subclasse.
          */
-        virtual void save() = 0;
+        virtual void save();
 
         static std::string ExperimentTypeNames[2];
         static std::string ResourceTypeNames[4];
