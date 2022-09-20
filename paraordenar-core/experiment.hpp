@@ -60,7 +60,7 @@ namespace ParaordenarCore {
         std::string description;
         boost::gregorian::date date;
 
-        std::string log_file;
+        std::filesystem::path log_file;
 
         std::fstream experiment_file;
         std::filesystem::path base_path;

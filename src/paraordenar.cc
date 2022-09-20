@@ -58,9 +58,9 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 
-void read_global_state(int *, int *);
-void set_global_state_app(int);
-void set_global_state_vault(int);
+void read_global_state(std::string *, std::string *);
+void set_global_state_app(std::string);
+void set_global_state_vault(std::string);
 
 object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> &hierarchy);
 
@@ -183,14 +183,25 @@ object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> & h
     std::string o;
     // First push back of empty value, representing storage.
     hierarchy.push_back("");
+    std::string state_app, state_vault;
+    read_global_state(&state_app, &state_vault);
 
-    if(comm->count("-a")) {
-        o = *(comm->get_option("-a")->results().begin());
-        hierarchy.push_back(o);
-        subject = TApplication;
-        if (comm->count("-x")) {
-            o = *(comm->get_option("-x")->results().begin());
+    if(comm->count("-a") || !state_app.empty()) {
+        if(comm->count("-a")) {
+            o = *(comm->get_option("-a")->results().begin());
             hierarchy.push_back(o);
+        } else {
+            hierarchy.push_back(state_app);
+        }
+        subject = TApplication;
+
+        if (comm->count("-x") || !state_vault.empty()) {
+            if(comm->count("-x")) {
+                o = *(comm->get_option("-x")->results().begin());
+                hierarchy.push_back(o);
+            } else {
+                hierarchy.push_back(state_vault);
+            }
             subject = TVault;
             if(comm->count("-t")) {
                 o = *(comm->get_option("-t")->results().begin());
@@ -211,7 +222,7 @@ object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> & h
         }
         
     } else {
-        hierarchy.clear();
+        //hierarchy.clear();
         return subject;
     }
 }
@@ -280,31 +291,21 @@ void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
     if(comm->count("-d")) {
         // Cas de descartar l'entorn seleccionat
-        set_global_state_app(-1);
-        set_global_state_vault(-1);
+        set_global_state_app("");
+        set_global_state_vault("");
         return;
     }
 
-    std::vector<std::string> objectHierarchy;
-    object_t subject = objectHierarchyFromOptions(comm, objectHierarchy);
-
-    switch (subject)
-    {
-    case TStorage:
-        return;
+    SUBJECT_SWITCH
         // Seleccionar un storage no te sentit de moment
     
-    case TApplication:
-        set_global_state_app(mstr->get_app_id(objectHierarchy.back()));
-        break;
+    SUBJECT_SWITCH_APP
+        set_global_state_app(oh[s]);
 
-    case TVault:
+    SUBJECT_SWITCH_VAULT
+        set_global_state_vault(oh[s]);
 
-        break;
-    
-    default:
-        break;
-    }
+    SUBJECT_SWITCH_FIN
 
     return;
 }
@@ -673,29 +674,29 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
 //@}
 
-void read_global_state(int *app, int *vault) {
+void read_global_state(std::string *app, std::string *vault) {
     if(boost::filesystem::exists(paraordenar_dir+"/app"))  {
-        std::fstream app_state_file(paraordenar_dir+"/app", std::ios::in | std::ios::binary);
-        int app_id;
-        app_state_file.read(reinterpret_cast<char*>(&app_id), sizeof(app_id));
+        std::fstream app_state_file(paraordenar_dir+"/app", std::ios::in);
+        std::string app_id;
+        std::getline(app_state_file, app_id);
         *app = app_id;
     } else {
-        std::fstream app_state_file(paraordenar_dir+"/app", std::ios::out | std::ios::binary);
-        int no_app = -1;
-        app_state_file.write(reinterpret_cast<char*>(&no_app), sizeof(no_app));
+        std::fstream app_state_file(paraordenar_dir+"/app", std::ios::out);
+        std::string no_app = "";
+        app_state_file.write(no_app.c_str(), no_app.size());
         app_state_file.close();
         *app = no_app;
     }
 
     if(boost::filesystem::exists(paraordenar_dir+"/vault"))  {
-        std::fstream vault_state_file(paraordenar_dir+"/vault", std::ios::in | std::ios::binary);
-        int vault_id;
-        vault_state_file.read(reinterpret_cast<char*>(&vault_id), sizeof(vault_id));
+        std::fstream vault_state_file(paraordenar_dir+"/vault", std::ios::in);
+        std::string vault_id;
+        std::getline(vault_state_file, vault_id);
         *vault = vault_id;
     } else {
-        std::fstream vault_state_file(paraordenar_dir+"/vault", std::ios::out | std::ios::binary);
-        int no_vault = -1;
-        vault_state_file.write(reinterpret_cast<char*>(&no_vault), sizeof(no_vault));
+        std::fstream vault_state_file(paraordenar_dir+"/vault", std::ios::out);
+        std::string no_vault = "";
+        vault_state_file.write(no_vault.c_str(), no_vault.size());
         vault_state_file.close();
         *vault = no_vault;
     }
@@ -703,16 +704,16 @@ void read_global_state(int *app, int *vault) {
     return;
 }
 
-void set_global_state_app(int app_id) {
-    std::fstream app_state_file(paraordenar_dir+"/app", std::ios::out | std::ios::binary | std::ios::trunc);
-    app_state_file.write(reinterpret_cast<char*>(&app_id), sizeof(app_id));
+void set_global_state_app(std::string app_id) {
+    std::fstream app_state_file(paraordenar_dir+"/app", std::ios::out | std::ios::trunc);
+    app_state_file.write(app_id.c_str(), app_id.size());
     app_state_file.close();
 }
 
-void set_global_state_vault(int vault_id)
+void set_global_state_vault(std::string vault_id)
 {
-    std::fstream vault_state_file(paraordenar_dir + "/vault", std::ios::out | std::ios::binary | std::ios::trunc);
-    vault_state_file.write(reinterpret_cast<char *>(&vault_id), sizeof(vault_id));
+    std::fstream vault_state_file(paraordenar_dir + "/vault", std::ios::out | std::ios::trunc);
+    vault_state_file.write(vault_id.c_str(), vault_id.size());
     vault_state_file.close();
 }
 
