@@ -60,11 +60,11 @@ void Experiment::save() {
 }
 
 
-const std::string Experiment::get_path() {
+const std::filesystem::path Experiment::get_path() {
     return complete_path;
 }
 
-const std::string Experiment::get_base_path() {
+const std::filesystem::path Experiment::get_base_path() {
     return base_path;
 }
 

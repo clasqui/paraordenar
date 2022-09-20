@@ -100,10 +100,10 @@ int main(int argc, char **argv)
 
     CLI::App *add = app.add_subcommand("afegeix", "Afegeix un recurs a un experiment")
     ->alias("add")->fallthrough();
-    mod->add_option("arxiu", "Nom del recurs a afegir")->required();
-    mod->add_option("etiqueta", "Etiqueta del recurs")->required();
-    mod->add_option("n_threads", "Número de threads si varia de l'experiment base");
-    mod->add_option("n_ranks", "Número de MPI ranks si varia de l'experiment base");
+    add->add_option("arxiu", "Nom del recurs a afegir")->required();
+    add->add_option("etiqueta", "Etiqueta del recurs")->required();
+    add->add_option("n_threads", "Número de threads si varia de l'experiment base");
+    add->add_option("n_ranks", "Número de MPI ranks si varia de l'experiment base");
 
     CLI::App *arx = app.add_subcommand("arxiva", "Arxiva una aplicació")
     ->alias("arx")->fallthrough();
@@ -318,6 +318,8 @@ void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
     Project *p;
     Vault *x;
+    Trace *t;
+
     
     SUBJECT_SWITCH
 
@@ -345,6 +347,24 @@ void ls_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     }
     cli->list_experiments(x);
     
+    SUBJECT_SWITCH_TRACE
+    p = mstr->open_app(oh[1]);
+    if(p == nullptr) {
+        cli->err_no_existeix("El projecte", oh[1]);
+        exit(1);
+    }
+    x = p->open_vault(oh[2]);
+    if(x == nullptr) {
+        cli->err_no_existeix("La caixa", oh[2]);
+        exit(1);
+    }
+    t = (Trace *)x->open_experiment(oh[s]);
+    if(t == nullptr) {
+        cli->err_no_existeix("La traça", oh[s]);
+        exit(1);
+    }
+    cli->list_prvs(t);
+
     SUBJECT_SWITCH_FIN
 
     return;
@@ -518,7 +538,10 @@ void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     Vault *x;
     Trace *t;
 
-    if(s != TTrace || s != TWalltime) {
+    std::string arxiu, etiqueta;
+    int n_threads = 0, n_ranks = 0;
+
+    if(s != TTrace && s != TWalltime) {
         cli->error_generic("La comanda 'afegeix' només es pot utilitzar sobre un experiment.");
         exit(1);
     }
@@ -542,9 +565,32 @@ void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         }
 
         t = (Trace *)x->open_experiment(oh[s]);
+        if(t == nullptr) {
+            cli->err_no_existeix("La traça", oh[s]);
+            exit(1);
+        }
 
+        // Collect info from parameters
+        if(comm->get_option("arxiu")->count()) {
+            arxiu = *(comm->get_option("arxiu")->results().begin());
+        }
+        if(comm->get_option("etiqueta")->count()) {
+            etiqueta = *(comm->get_option("etiqueta")->results().begin());
+        }
+        if(comm->get_option("n_threads")->count()) {
+            n_threads = comm->get_option("n_threads")->as<int>();
+        }
+        if(comm->get_option("n_ranks")->count()) {
+            n_ranks = comm->get_option("n_ranks")->as<int>();
+        }
 
+        if(!std::filesystem::exists(t->get_base_path() / arxiu)) {
+            cli->err_no_existeix("L'arxiu PRV", arxiu);
+            exit(1);
+        }
 
+        t->add_prv(arxiu, etiqueta, n_threads, n_ranks);
+        t->save();
 
 
     SUBJECT_SWITCH_FIN

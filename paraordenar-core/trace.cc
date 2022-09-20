@@ -145,10 +145,20 @@ void Trace::parseExperimentDefinition() {
 }
 
 void Trace::add_prv(std::string key, std::string label, int nthr, int nmpi) {
+    int lnthr = nthr;
+    int lnmpi = nmpi;
+    if(nthr == 0) {
+        lnthr = this->omp_threads;
+
+    }
+    if(nmpi == 0) {
+        lnmpi = this->mpi_tasks;
+    }
+
     prv_metadata meta = {
         label,
-        nthr, 
-        nmpi
+        lnthr, 
+        lnmpi
     };
     std::pair<std::string, struct prv_metadata> entry = std::make_pair(key, meta);
     prv_resources.insert(entry);

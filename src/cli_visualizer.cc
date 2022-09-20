@@ -81,7 +81,7 @@ void CLI_Visualizer::print_info_trace(Trace *t) {
                    "{1}\n"
                    "{2}\n"
                    "{3}\n",
-        t->get_name(), Experiment::ExperimentTypeNames[t->get_type()], t->get_base_path(), t->get_description());
+        t->get_name(), Experiment::ExperimentTypeNames[t->get_type()], t->get_base_path().string(), t->get_description());
     }
 }
 
@@ -140,6 +140,28 @@ void CLI_Visualizer::list_experiments(Vault *x) {
         for (auto &&tw : x->get_experiments())
         {
             fmt::print("{}:{}\n", tw.first, tw.second);
+        }
+    }
+}
+
+void CLI_Visualizer::list_prvs(Trace *t) {
+        if(pr) {
+        std::cout << std::endl;
+        fmt::print(fmt::emphasis::bold, "{:^74}\n", "Llista de traces");
+        fmt::print("{:^32}|{:^21}|{:^10}|{:^8}\n", "Arxiu", "Etiqueta", "#Threads", "#Ranks");
+        fmt::print("{:-^74}\n", "");
+        for (auto &&prv : t->get_list_prv())
+        {
+            fmt::print(" {:<31}| {:<20}| {:<9}|{:<7}\n", prv.first, 
+                prv.second.label, 
+                prv.second.n_threads,
+                prv.second.n_ranks);
+        }
+        std::cout << std::endl;
+    } else {
+        for (auto &&prv : t->get_list_prv())
+        {
+            fmt::print("{}:{}:{}:{}\n", prv.first, prv.second.label, prv.second.n_threads, prv.second.n_ranks);
         }
     }
 }

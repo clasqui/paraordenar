@@ -88,8 +88,8 @@ namespace ParaordenarCore {
          * als membres de la classe Project.
          */
         ///@{
-        const std::string               get_path();
-        const std::string               get_base_path();
+        const std::filesystem::path     get_path();
+        const std::filesystem::path     get_base_path();
         const std::string               get_name();
         const std::string               get_description();
         const boost::gregorian::date    get_date();

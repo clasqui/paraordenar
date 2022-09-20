@@ -48,7 +48,8 @@ public:
     void list_applications(Storage *s);
     void list_vaults(Project *p);
     void list_experiments(Vault *x);
+    void list_prvs(Trace *t);
 
     void err_no_existeix(std::string que, std::string s);
-    void error_generic(std::string missatge)
+    void error_generic(std::string missatge);
 };
