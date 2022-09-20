@@ -181,6 +181,8 @@ int main(int argc, char **argv)
 object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> & hierarchy) {
     object_t subject = TStorage;
     std::string o;
+    bool flag_ignore_state = false;
+
     // First push back of empty value, representing storage.
     hierarchy.push_back("");
     std::string state_app, state_vault;
@@ -188,6 +190,7 @@ object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> & h
 
     if(comm->count("-a") || !state_app.empty()) {
         if(comm->count("-a")) {
+            flag_ignore_state = true;
             o = *(comm->get_option("-a")->results().begin());
             hierarchy.push_back(o);
         } else {
@@ -195,7 +198,7 @@ object_t objectHierarchyFromOptions(CLI::App *comm, std::vector<std::string> & h
         }
         subject = TApplication;
 
-        if (comm->count("-x") || !state_vault.empty()) {
+        if (comm->count("-x") || (!state_vault.empty() && !flag_ignore_state)) {
             if(comm->count("-x")) {
                 o = *(comm->get_option("-x")->results().begin());
                 hierarchy.push_back(o);
