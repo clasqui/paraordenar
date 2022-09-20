@@ -303,6 +303,7 @@ void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         set_global_state_app(oh[s]);
 
     SUBJECT_SWITCH_VAULT
+        set_global_state_app(oh[s-1]);
         set_global_state_vault(oh[s]);
 
     SUBJECT_SWITCH_FIN
@@ -463,12 +464,17 @@ void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
     std::fstream storageconfig;
     std::string tmp_storagedir;
-    std::string description = "";
-    CLI::results_t res_desc;
+    std::string clau, valor;
     Project *p;
     Vault *x;
     Trace *t;
-    int id_inserit;
+
+    if(comm->get_option("clau")->count()) {
+        clau = *(comm->get_option("clau")->results().begin());
+    }
+    if(comm->get_option("valor")->count()) {
+        valor = *(comm->get_option("valor")->results().begin());
+    }
 
     SUBJECT_SWITCH
 
@@ -493,7 +499,19 @@ void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         storageconfig.close();
 
     SUBJECT_SWITCH_APP
+        p = mstr->open_app(oh[1]);
+        if(p == nullptr) {
+            std::cerr << "El projecte no existeix!" << std::endl;
+            exit(1);
+        }
 
+        if(clau == "descripcio") {
+            p->set_description(valor);
+        } else if(clau == "llenguatge") {
+            p->set_language(valor);
+        }
+
+        p->save();
 
 
     SUBJECT_SWITCH_VAULT
@@ -502,7 +520,18 @@ void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
             std::cerr << "El projecte no existeix!" << std::endl;
             exit(1);
         }
+        x = p->open_vault(oh[2]);
+        if(x == nullptr) {
+            cli->err_no_existeix("La caixa", oh[2]);
+            exit(1);
+        }
 
+        if(clau == "descripcio") {
+            x->set_description(valor);
+        } else if(clau == "conclusions") {
+            x->set_conclusions(valor);
+        }
+        x->save();
 
     SUBJECT_SWITCH_TRACE
         p = mstr->open_app(oh[1]);
@@ -517,8 +546,27 @@ void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         }
 
         t = (Trace *)x->open_experiment(oh[s]);
+        if(t == nullptr) {
+            cli->err_no_existeix("La traça", oh[s]);
+            exit(1);
+        }
 
+        // Check which parameters we can modify
 
+        if(clau == "log") {
+            if(!std::filesystem::exists(valor)) {
+                cli->err_no_existeix("L'arxiu de registre", valor);
+                exit(1);
+            }
+            t->set_logfile_name(valor);
+        } else if(clau == "descripcio") {
+            t->set_description(valor);
+        } else if(clau == "threads") {
+            t->set_omp_threads(std::stoi(valor));
+        } else if(clau == "ranks") {
+            t->set_mpi_tasks(std::stoi(valor));
+        }
+        t->save();
 
 
 
