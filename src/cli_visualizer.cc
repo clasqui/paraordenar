@@ -74,14 +74,26 @@ void CLI_Visualizer::print_info_trace(Trace *t) {
         fmt::print("\t┌{0:-^{1}}┐\n"
                 "\t│{2: ^{1}}│\n"
                 "\t│{3: ^{1}}│\n"
+                "\t│ #Threads: {4: <8}  #Ranks: {5: <11}│\n"
                 "\t└{0:-^{1}}┘\n",
-                "", 30, fmt::styled(t->get_name(), fmt::emphasis::bold), Experiment::ExperimentTypeNames[t->get_type()]);
+                "", 40, fmt::styled(t->get_name(), 
+                fmt::emphasis::bold), 
+                fmt::styled(Experiment::ExperimentTypeNames[t->get_type()], fmt::fg(fmt::color::sky_blue)),
+                t->get_omp_threads(), t->get_mpi_tasks());
+        fmt::print("\nDescrpició: {}\n"
+                    "Arxiu de Log: {}\n", 
+                    t->get_description(),
+                    t->get_logfile_name());
     } else {
         fmt::print("{0}\n"
                    "{1}\n"
                    "{2}\n"
-                   "{3}\n",
-        t->get_name(), Experiment::ExperimentTypeNames[t->get_type()], t->get_base_path().string(), t->get_description());
+                   "{3}\n"
+                   "{4}\n",
+        t->get_name(), Experiment::ExperimentTypeNames[t->get_type()], 
+        t->get_base_path().string(), 
+        t->get_description(),
+        t->get_logfile_name());
     }
 }
 
@@ -107,10 +119,13 @@ void CLI_Visualizer::list_applications(Storage *s) {
 
 void CLI_Visualizer::list_vaults(Project *p) {
     if(pr) {
-        fmt::print(fmt::emphasis::bold, "Llista de caixes: ({} en total)\n", p->get_vaults().size());
+        std::cout << std::endl;
+        fmt::print(fmt::emphasis::bold, "{:^30}\n", "Llista de caixes");
+        fmt::print("{:^30}\n", "Nom");
+        fmt::print("{:-^30}\n", "");
         for (auto &&p : p->get_vaults())
         {
-            fmt::print("\t-> {}\n", p);
+            fmt::print("{:^30}\n", p);
         }
     } else {
         for (auto &&p : p->get_vaults())
