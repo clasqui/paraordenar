@@ -57,12 +57,13 @@ std::string Storage::get_path() {
     return this->storage_path;
 }
 
-void Storage::init_path(std::string path) {
-    if(!boost::filesystem::exists(path)) {
+void Storage::init_path(std::filesystem::path path) {
+    if(!std::filesystem::exists(path)) {
         throw PROException(ExceptionType::ENoPath, "No existeix el path");
     }
 
-    if(boost::filesystem::exists(boost::filesystem::path(path).append(".prostorage"))) {
+    std::filesystem::path file_path = std::filesystem::path(path).append(".prostorage");
+    if(std::filesystem::exists(file_path)) {
         throw PROException(ExceptionType::EAlreadyExists, "Ja hi ha un emmagatzematge inicialitzat en aquest directori.");
     }
 
@@ -71,7 +72,7 @@ void Storage::init_path(std::string path) {
     
     writeStorageConfig();
 
-    this->storage_file.open(path+"/.prostorage", std::ios::in);
+    this->storage_file.open(file_path, std::ios::in);
 
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load(storage_file);

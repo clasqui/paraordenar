@@ -87,7 +87,7 @@ class Storage {
          * 
          * @param path Cami on inicialitzar
          */
-        void init_path(std::string path);
+        void init_path(std::filesystem::path path);
 
         /**
          * @brief Crea un nou projecte dins l'emmagatzematge
