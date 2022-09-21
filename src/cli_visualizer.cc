@@ -166,12 +166,12 @@ void CLI_Visualizer::list_experiments(Vault *x) {
 void CLI_Visualizer::list_prvs(Trace *t) {
         if(pr) {
         std::cout << std::endl;
-        fmt::print(fmt::emphasis::bold, "{:^74}\n", "Llista de traces");
-        fmt::print("{:^32}|{:^21}|{:^10}|{:^8}\n", "Arxiu", "Etiqueta", "#Threads", "#Ranks");
-        fmt::print("{:-^74}\n", "");
+        fmt::print(fmt::emphasis::bold, "{:^100}\n", "Llista de traces");
+        fmt::print("{:^48}|{:^31}|{:^10}|{:^8}\n", "Arxiu", "Etiqueta", "#Threads", "#Ranks");
+        fmt::print("{:-^100}\n", "");
         for (auto &&prv : t->get_list_prv())
         {
-            fmt::print(" {:<31}| {:<20}| {:<9}|{:<7}\n", prv.first, 
+            fmt::print(" {:<47}| {:<30}| {:<9}|{:<7}\n", prv.first, 
                 prv.second.label, 
                 prv.second.n_threads,
                 prv.second.n_ranks);
