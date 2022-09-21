@@ -5,33 +5,6 @@ project(Paraordenar VERSION 0.1)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
-####### DOCS #######
-
-option(BUILD_DOC "Build documentation" ON)
-
-if(BUILD_DOC)
-find_package(Doxygen)
-    if (DOXYGEN_FOUND)
-        # set input and output files
-        set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
-        set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-        # request to configure the file
-        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-        message("-- Doxygen build started")
-
-        # note the option ALL which allows to build the docs together with the application
-        add_custom_target( docs ALL
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-            COMMAND cd docs/latex && make
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Generating API documentation with Doxygen"
-            )
-    else (DOXYGEN_FOUND)
-    message("-! Doxygen need to be installed to generate the doxygen documentation")
-    endif (DOXYGEN_FOUND)
-endif(BUILD_DOC)
-
 ####### LIBRARIES CONFIG #######
 
 set(BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Boost installation directory")
@@ -84,3 +57,40 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(paraordenar-core)
 add_subdirectory(src)
+
+####### DOCS #######
+
+option(BUILD_DOC "Build documentation" ON)
+
+if(BUILD_DOC)
+find_package(Doxygen)
+    if (DOXYGEN_FOUND)
+        # set input and output files
+        set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+        # request to configure the file
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+        message("-- Doxygen build started")
+
+        # note the option ALL which allows to build the docs together with the application
+        add_custom_target( docs ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+            COMMAND cd docs/latex && make
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Generating API documentation with Doxygen"
+            )
+            install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs/man"
+            DESTINATION share/
+            )
+            install(FILES "${CMAKE_CURRENT_BINARY_DIR}/docs/latex/refman.pdf"
+            DESTINATION share/doc/
+            )
+            install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs/html"
+            DESTINATION share/doc/
+            )
+        
+    else (DOXYGEN_FOUND)
+    message("-! Doxygen need to be installed to generate the doxygen documentation")
+    endif (DOXYGEN_FOUND)
+endif(BUILD_DOC)
