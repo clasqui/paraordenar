@@ -29,9 +29,9 @@ using namespace ParaordenarCore;
  Vault::Vault(std::string name, std::string description, std::string applicationPath) {
 
      // Comprovem nom vault
-    static const boost::regex e("^\\w+$");
+    static const boost::regex e("^[\\w-]+$");
     if(!boost::regex_match(name, e)) {
-        throw PROException(ExceptionType::ENameNotValid, "El nom per la caixa no és vàlid");
+        throw PROException(ExceptionType::ENameNotValid, "El nom per la caixa no és vàlid. Només pot contenir lletres, números i guions.");
     }
 
     this->name = name;

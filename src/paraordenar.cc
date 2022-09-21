@@ -409,7 +409,20 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
             description = *(res_desc.begin());
         }
 
-        p = mstr->new_app(oh.back(), description);
+        try
+        {
+            p = mstr->new_app(oh.back(), description);
+        }
+        catch(const PROException& e)
+        {
+            cli->error_generic(e.message);
+            exit(1);
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            exit(1);
+        }
         std::cout << "Nou projecte creat a " << p->get_path() << std::endl;
 
 
@@ -421,15 +434,28 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         // }
 
     SUBJECT_SWITCH_VAULT
-        p = mstr->open_app(oh[1]);
-        if(p == nullptr) {
-            std::cerr << "El projecte no existeix!" << std::endl;
+        try {       
+            p = mstr->open_app(oh[1]);
+            if(p == nullptr) {
+                cli->err_no_existeix("El projecte", oh[1]);
+                exit(1);
+            }
+            x = p->new_vault(oh.back(), "");
+            p->save();
+        }
+        catch(const PROException& e)
+        {
+            cli->error_generic(e.message);
+            exit(1);
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
             exit(1);
         }
 
-        x = p->new_vault(oh.back(), "");
         std::cout << "Nova caixa creada a " << x->get_path() << std::endl;
-        p->save();
+        
 
         // if (comm->count("-s"))
         // {
@@ -439,18 +465,32 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         // }
 
     SUBJECT_SWITCH_TRACE
-        p = mstr->open_app(oh[1]);
-        if(p == nullptr) {
-            cli->err_no_existeix("El projecte", oh[1]);
+        try
+        {
+            p = mstr->open_app(oh[1]);
+            if(p == nullptr) {
+                cli->err_no_existeix("El projecte", oh[1]);
+                exit(1);
+            }
+            x = p->open_vault(oh[2]);
+            if(x == nullptr) {
+                cli->err_no_existeix("La caixa", oh[2]);
+                exit(1);
+            }
+            t = (Trace *)x->new_experiment(oh[s], ExperimentType::Tracing);
+            x->save();
+        }
+        catch(const PROException& e)
+        {
+            cli->error_generic(e.message);
             exit(1);
         }
-        x = p->open_vault(oh[2]);
-        if(x == nullptr) {
-            cli->err_no_existeix("La caixa", oh[2]);
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
             exit(1);
         }
-        t = (Trace *)x->new_experiment(oh[s], ExperimentType::Tracing);
-        x->save();
+
         fmt::print("Nova traça creada a {} amb el nom {}\n", x->get_path(), t->get_name());
 
 

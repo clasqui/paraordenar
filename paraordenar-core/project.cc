@@ -27,9 +27,9 @@ using namespace ParaordenarCore;
  Project::Project(std::string name, std::string description, std::string storagePath) {
 
      // Comprovem nom projecte
-    static const boost::regex e("^\\w+$");
+    static const boost::regex e("^[\\w-]+$");
     if(!boost::regex_match(name, e)) {
-        throw PROException(ExceptionType::ENameNotValid, "El nom pel projecte no és vàlid");
+        throw PROException(ExceptionType::ENameNotValid, "El nom pel projecte no és vàlid. Només pot contenir lletres, números i guions.");
     }
 
     this->name = name;

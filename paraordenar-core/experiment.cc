@@ -29,7 +29,7 @@ Experiment::Experiment(std::string name, ExperimentType type, std::string vaultP
      // Comprovem nom experiment
     static const boost::regex e("^[\\w-]+$");
     if(!boost::regex_match(name, e)) {
-        throw PROException(ExceptionType::ENameNotValid, "El nom per l'experiment no és vàlid");
+        throw PROException(ExceptionType::ENameNotValid, "El nom per l'experiment no és vàlid. Només pot contenir lletres, números i guions.");
     }
 
     this->name = name;
