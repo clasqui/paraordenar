@@ -100,15 +100,19 @@ void CLI_Visualizer::print_info_trace(Trace *t) {
 
 void CLI_Visualizer::list_applications(Storage *s) {
     if(pr) {
-        fmt::print(fmt::emphasis::bold, "Llista de projectes: ({} en total)\n", s->get_apps().size());
+        std::cout << std::endl;
+        fmt::print(fmt::emphasis::bold, "{:^40}\n", "Llista de projectes");
+        fmt::print("{:^30}|{:^9}\n", "Nom", "Estat");
+        fmt::print("{:-^40}\n", "");
         for (auto &&p : s->get_apps())
         {
             if(p.second) {
-                fmt::print("\t-> {}: {}\n", p.first, fmt::styled("Actiu", fmt::fg(fmt::color::green)));
+                fmt::print(" {:<29}| {:<8}\n", p.first, fmt::styled("Actiu", fmt::fg(fmt::color::light_green)));
             } else {
-                fmt::print("\t-> {}: {}\n", p.first, fmt::styled("Arxivat", fmt::fg(fmt::color::red)));
+                fmt::print(" {:<29}| {:<8}\n", p.first, fmt::styled("Arxivat", fmt::fg(fmt::color::red)));
             }
         }
+
     } else {
         for (auto &&p : s->get_apps())
         {
