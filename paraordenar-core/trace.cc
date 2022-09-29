@@ -164,6 +164,19 @@ void Trace::add_prv(std::string key, std::string label, int nthr, int nmpi) {
     prv_resources.insert(entry);
 }
 
+int Trace::rem_prv(std::string key, bool fs) {
+    auto iter = prv_resources.find(key);
+    if(iter == prv_resources.end()) {
+        return 1;
+    }
+
+    prv_resources.erase(iter);
+
+    //TODO: implementar eliminar arxius
+
+    return 0;
+}
+
 const prv_dict_t Trace::get_list_prv() {
     return prv_resources;
 }

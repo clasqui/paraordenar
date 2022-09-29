@@ -9,31 +9,6 @@
 
 #pragma once
 
-#define SUBJECT_SWITCH switch (s) \
-                        { \
-                        case TStorage:
-
-#define SUBJECT_SWITCH_APP    break; \
-                                \
-                            case TApplication:
-
-#define SUBJECT_SWITCH_VAULT    break; \
-                                \
-                            case TVault:
-
-#define SUBJECT_SWITCH_TRACE    break; \
-                                \
-                            case TTrace:
-
-#define SUBJECT_SWITCH_WALLTIME    break; \
-                                \
-                            case TWalltime:
-
-#define SUBJECT_SWITCH_FIN   break; \
-                            default: \
-                             break; \
-                            }
-
     namespace ParaordenarCore
     {
 

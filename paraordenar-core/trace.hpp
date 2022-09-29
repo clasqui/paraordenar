@@ -92,6 +92,18 @@ namespace ParaordenarCore {
         void add_prv(std::string key, std::string label, int nthr, int nmpi);
 
         /**
+         * @brief Treu un recurs PRV de la llista de l'experiment de traceig
+         * 
+         * @param key nom del recurs (nom de l'arxiu)
+         * @param fs Elimina o no els arxius dels sistema de fitxers
+         * 
+         * @return 0 si s'ha eliminat correctament, 1 si no existia, 2 si s'ha eliminat de la llista pero no del sistema de fitxers
+         * 
+         * @todo Implementa eliminar fitxers
+         */
+        int rem_prv(std::string key, bool fs);
+
+        /**
          * @brief Obté la llista de recursos PRV
          * 
          * @return prv_dict_t 

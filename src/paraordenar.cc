@@ -28,6 +28,7 @@
 #include "CLI11.hpp"
 #include <boost/filesystem.hpp>
 
+// project includes
 #include "storage.hpp"
 #include "project.hpp"
 #include "trace.hpp"
@@ -37,6 +38,7 @@
 
 /* 2 defines */
 #define CONFIG_PATH "/.config/paraordenar"
+#include "pro_defines.hpp"
 
 /* 3 external declarations */
 using namespace ParaordenarCore;
@@ -60,6 +62,7 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void rem_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 
 void read_global_state(std::string *, std::string *);
 void set_global_state_app(std::string);
@@ -102,6 +105,10 @@ int main(int argc, char **argv)
     mod->add_option("clau", "Clau del paràmetre a modificar")->required();
     mod->add_option("valor", "Nou valor pel paràmetre")->required();
 
+    CLI::App *eli = app.add_subcommand("elimina", "Elimina una aplicació, caixa o traça")
+    ->alias("eli")->fallthrough();
+    eli->add_flag("-f,--fitxers", "Elimina dels arxius del sistema de fitxers també");
+
     // Modul treball amb traces
     CLI::App *add = app.add_subcommand("afegeix", "Afegeix un recurs a un experiment")
     ->alias("add")->fallthrough();
@@ -110,8 +117,14 @@ int main(int argc, char **argv)
     add->add_option("n_threads", "Número de threads si varia de l'experiment base");
     add->add_option("n_ranks", "Número de MPI ranks si varia de l'experiment base");
 
+    CLI::App *rem = app.add_subcommand("treu", "Treu un recurs a un experiment")
+    ->alias("rem")->fallthrough();
+    rem->add_option("arxiu", "Nom del recurs a treure")->required();
+    rem->add_flag("-f,--fitxers", "Elimina dels arxius del sistema de fitxers també");
+
     CLI::App *obr = app.add_subcommand("obre", "Obre les traces d'un experiment amb Paraver")
     ->alias("obr")->fallthrough();
+    obr->add_option("etiqueta", "Etiqueta de la traça que vols obrir");
 
     // Modul gestio repositori
     CLI::App *arx = app.add_subcommand("arxiva", "Arxiva una aplicació")
@@ -165,6 +178,7 @@ int main(int argc, char **argv)
         if(nom == "modifica") mod_command(subcom, subject, objectHierarchy);
         if(nom == "afegeix") add_command(subcom, subject, objectHierarchy);
         if(nom == "obre") obr_command(subcom, subject, objectHierarchy);
+        if(nom == "treu") rem_command(subcom, subject, objectHierarchy);
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -699,6 +713,70 @@ void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     SUBJECT_SWITCH_FIN
 
 }
+
+/**
+ * @brief Funció per gestionar la comanda _treu_
+ *
+ * @param comm Punter a l'objecte amb la subcomanda
+ * @param s subjecte sobre el que es crida l'accio
+ * @param oh jerarquia d'objectes
+ */
+void rem_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
+
+    Project *p;
+    Vault *x;
+    Trace *t;
+
+    std::string arxiu, etiqueta;
+    int n_threads = 0, n_ranks = 0;
+    prv_dict_t copy_dict;
+    prv_dict_t::iterator titer;
+
+    if(s != TTrace && s != TWalltime) {
+        cli->error_generic("La comanda 'afegeix' només es pot utilitzar sobre un experiment.");
+        exit(1);
+    }
+
+    SUBJECT_SWITCH
+
+    SUBJECT_SWITCH_APP
+
+    SUBJECT_SWITCH_VAULT
+
+    SUBJECT_SWITCH_TRACE
+
+        LOAD_PROJECT_MACRO(p)
+        LOAD_VAULT_MACRO(x)
+        LOAD_TRACE_MACRO(t)
+
+        // Collect info from parameters
+        if(comm->get_option("arxiu")->count()) {
+            arxiu = *(comm->get_option("arxiu")->results().begin());
+        }
+
+        copy_dict = t->get_list_prv();
+        titer = copy_dict.find(arxiu);
+        if(titer == copy_dict.end()) {
+            cli->err_no_existeix("El recurs PRV", arxiu);
+            exit(1);
+        }
+
+        t->rem_prv(arxiu, comm->count("-f"));
+        t->save();
+
+        if(comm->count("-f")) {
+            if(!std::filesystem::exists(t->get_base_path() / arxiu)) {
+                cli->err_no_existeix("L'arxiu PRV", arxiu);
+                exit(1);
+            }
+        }
+
+
+
+    SUBJECT_SWITCH_FIN
+
+}
+
 
 /**
  * @brief Funció per gestionar la comanda _obre_
