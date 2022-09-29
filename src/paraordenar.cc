@@ -21,6 +21,8 @@
 #include <fstream>
 #include <string>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <cerrno>
 
 //Libraries
 #include "CLI11.hpp"
@@ -57,6 +59,7 @@ void crea_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 
 void read_global_state(std::string *, std::string *);
 void set_global_state_app(std::string);
@@ -82,6 +85,7 @@ int main(int argc, char **argv)
     app.add_option("-t", "Experiment de Traceig");
     app.add_option("-w", "Experiment de Walltime");
 
+    // Modul base
     CLI::App *crea = app.add_subcommand("crea", "Crea un emmagatzematge nou, aplicació, caixa, o traça")
     ->alias("cre")->fallthrough();
     crea->add_option("description", "Descripcio del nou objecte creat. S'ignora si es crea un nou emmagatzematge.");
@@ -98,6 +102,7 @@ int main(int argc, char **argv)
     mod->add_option("clau", "Clau del paràmetre a modificar")->required();
     mod->add_option("valor", "Nou valor pel paràmetre")->required();
 
+    // Modul treball amb traces
     CLI::App *add = app.add_subcommand("afegeix", "Afegeix un recurs a un experiment")
     ->alias("add")->fallthrough();
     add->add_option("arxiu", "Nom del recurs a afegir")->required();
@@ -105,12 +110,17 @@ int main(int argc, char **argv)
     add->add_option("n_threads", "Número de threads si varia de l'experiment base");
     add->add_option("n_ranks", "Número de MPI ranks si varia de l'experiment base");
 
+    CLI::App *obr = app.add_subcommand("obre", "Obre les traces d'un experiment amb Paraver")
+    ->alias("obr")->fallthrough();
+
+    // Modul gestio repositori
     CLI::App *arx = app.add_subcommand("arxiva", "Arxiva una aplicació")
     ->alias("arx")->fallthrough();
 
     CLI::App *sync = app.add_subcommand("sincronitza", "Sincronitza un emmagatzematge, projecte o caixa amb un repositori remot")
     ->alias("sin")->fallthrough();
 
+    // Estat
     CLI::App *sel = app.add_subcommand("selecciona", "Sel·lecciona l'objecte per establir com a entorn")
     ->alias("sel")->fallthrough();
     sel->add_flag("-d", "Descarta l'entorn actual.");
@@ -154,6 +164,7 @@ int main(int argc, char **argv)
         if(nom == "informacio") inf_command(subcom, subject, objectHierarchy);
         if(nom == "modifica") mod_command(subcom, subject, objectHierarchy);
         if(nom == "afegeix") add_command(subcom, subject, objectHierarchy);
+        if(nom == "obre") obr_command(subcom, subject, objectHierarchy);
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -684,6 +695,94 @@ void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         t->add_prv(arxiu, etiqueta, n_threads, n_ranks);
         t->save();
 
+
+    SUBJECT_SWITCH_FIN
+
+}
+
+/**
+ * @brief Funció per gestionar la comanda _obre_
+ *
+ * @param comm Punter a l'objecte amb la subcomanda
+ * @param s subjecte sobre el que es crida l'accio
+ * @param oh jerarquia d'objectes
+ */
+void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
+
+    Project *p;
+    Vault *x;
+    Trace *t;
+
+    int pid, status, i;
+    prv_dict_t dict_copy;
+    std::vector<std::string> prv_paths;
+    const char **argv;
+
+    const char* paraver_name = "wxparaver";
+
+    if(s != TTrace) {
+        cli->error_generic("La comanda 'afegeix' només es pot utilitzar sobre un experiment de Tracing.");
+        exit(1);
+    }
+
+    SUBJECT_SWITCH
+
+    SUBJECT_SWITCH_APP
+
+    SUBJECT_SWITCH_VAULT
+
+    SUBJECT_SWITCH_TRACE
+        p = mstr->open_app(oh[1]);
+        if(p == nullptr) {
+            cli->err_no_existeix("El projecte", oh[1]);
+            exit(1);
+        }
+        x = p->open_vault(oh[2]);
+        if(x == nullptr) {
+            cli->err_no_existeix("La caixa", oh[2]);
+            exit(1);
+        }
+
+        t = (Trace *)x->open_experiment(oh[s]);
+        if(t == nullptr) {
+            cli->err_no_existeix("La traça", oh[s]);
+            exit(1);
+        }
+
+        dict_copy = t->get_list_prv();
+        argv = new const char* [dict_copy.size()+2];
+        argv[0] = paraver_name;
+
+        i = 1;
+        for (auto const& el : dict_copy) {
+            prv_paths.push_back(t->get_base_path() / std::filesystem::path(el.first));
+            argv[i] = prv_paths[i-1].c_str();
+            i++;
+        }
+        argv[i] = NULL;
+        
+        // Crida Paraver
+        if(pid = fork()) {
+            waitpid(pid, &status, 0);
+            if(status == -1) {
+                cli->error_generic("Alguna cosa ha anat malament en executar Paraver:");
+                cli->error_generic(std::strerror(errno));
+            }
+        } else {
+            try
+            {
+                execvp(paraver_name, (char **)argv);
+                /* exec does not return unless the program couldn't be started. 
+                when the child process stops, the waitpid() above will return.
+                */
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+            
+            
+        }
 
     SUBJECT_SWITCH_FIN
 
