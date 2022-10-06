@@ -18,7 +18,7 @@ target_link_libraries(Paraordenar PUBLIC
 )
 
 
-install(TARGETS Paraordenar DESTINATION bin)
+install(TARGETS Paraordenar RUNTIME DESTINATION bin)
 install(FILES "../inc/cli_visualizer.hpp" "../inc/CLI11.hpp" "../inc/pro_defines.hpp"
   DESTINATION include
   )

@@ -795,6 +795,7 @@ void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     prv_dict_t dict_copy;
     std::vector<std::string> prv_paths;
     const char **argv;
+    std::string etiqueta;
 
     const char* paraver_name = "wxparaver";
 
@@ -810,33 +811,39 @@ void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     SUBJECT_SWITCH_VAULT
 
     SUBJECT_SWITCH_TRACE
-        p = mstr->open_app(oh[1]);
-        if(p == nullptr) {
-            cli->err_no_existeix("El projecte", oh[1]);
-            exit(1);
-        }
-        x = p->open_vault(oh[2]);
-        if(x == nullptr) {
-            cli->err_no_existeix("La caixa", oh[2]);
-            exit(1);
-        }
-
-        t = (Trace *)x->open_experiment(oh[s]);
-        if(t == nullptr) {
-            cli->err_no_existeix("La traça", oh[s]);
-            exit(1);
-        }
+        
+        LOAD_PROJECT_MACRO(p)
+        LOAD_VAULT_MACRO(x)
+        LOAD_TRACE_MACRO(t)
 
         dict_copy = t->get_list_prv();
-        argv = new const char* [dict_copy.size()+2];
-        argv[0] = paraver_name;
 
-        i = 1;
-        for (auto const& el : dict_copy) {
-            prv_paths.push_back(t->get_base_path() / std::filesystem::path(el.first));
-            argv[i] = prv_paths[i-1].c_str();
-            i++;
+        if(comm->get_option("etiqueta")->count()) {
+            argv = new const char* [3];
+            etiqueta = *(comm->get_option("etiqueta")->results().begin());
+
+            // Trobar el prv de letiqueta
+            for (auto const& el : dict_copy) {
+                if(el.second.label.compare(etiqueta)) {
+                    prv_paths.push_back(t->get_base_path() / std::filesystem::path(el.first));
+                    argv[i] = prv_paths[i-1].c_str();
+                    i++;
+                    break;
+                }
+            }
+        } else {
+            argv = new const char* [dict_copy.size()+2];
+            i = 1;
+            for (auto const& el : dict_copy) {
+                prv_paths.push_back(t->get_base_path() / std::filesystem::path(el.first));
+                argv[i] = prv_paths[i-1].c_str();
+                i++;
+            }
         }
+
+
+
+        argv[0] = paraver_name;
         argv[i] = NULL;
         
         // Crida Paraver

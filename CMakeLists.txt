@@ -8,7 +8,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 ####### LIBRARIES CONFIG #######
 
 set(BOOST_DIR $ENV{BOOST_DIR} CACHE PATH "Boost installation directory")
-set(BOOST_INCLUDE_DIR "${BOOST_DIR}" CACHE INTERNAL "")
+set(BOOST_INCLUDE_DIR "${BOOST_DIR}/include" CACHE INTERNAL "")
 set(BOOST_LIB_DIR "${BOOST_DIR}/lib" CACHE INTERNAL "")
 
 set(FMT_DIR $ENV{FMT_DIR} CACHE PATH "FMT installation directory")
