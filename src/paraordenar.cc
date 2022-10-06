@@ -63,6 +63,7 @@ void mod_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void rem_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void sin_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 
 void read_global_state(std::string *, std::string *);
 void set_global_state_app(std::string);
@@ -179,6 +180,7 @@ int main(int argc, char **argv)
         if(nom == "afegeix") add_command(subcom, subject, objectHierarchy);
         if(nom == "obre") obr_command(subcom, subject, objectHierarchy);
         if(nom == "treu") rem_command(subcom, subject, objectHierarchy);
+        //if(nom == "sincronitza") sin_command(subcom, subject, objectHierarchy);
     }
 
     delete mstr; // El destructor guarda la info al fitxer!
@@ -822,13 +824,14 @@ void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
 
         dict_copy = t->get_list_prv();
 
+        i = 1;
         if(comm->get_option("etiqueta")->count()) {
             argv = new const char* [3];
             etiqueta = *(comm->get_option("etiqueta")->results().begin());
 
             // Trobar el prv de letiqueta
             for (auto const& el : dict_copy) {
-                if(el.second.label.compare(etiqueta)) {
+                if(el.second.label == etiqueta) {
                     prv_paths.push_back(t->get_base_path() / std::filesystem::path(el.first));
                     argv[i] = prv_paths[i-1].c_str();
                     i++;
@@ -837,7 +840,6 @@ void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
             }
         } else {
             argv = new const char* [dict_copy.size()+2];
-            i = 1;
             for (auto const& el : dict_copy) {
                 prv_paths.push_back(t->get_base_path() / std::filesystem::path(el.first));
                 argv[i] = prv_paths[i-1].c_str();
