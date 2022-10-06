@@ -97,6 +97,17 @@ void CLI_Visualizer::print_info_trace(Trace *t) {
     }
 }
 
+void CLI_Visualizer::print_current_state(std::string app, std::string vault) {
+    if(pr) {
+        fmt::print("Projecte: {}\nCaixa: {}\n",
+                    fmt::styled(app, fmt::emphasis::underline), 
+                    fmt::styled(vault, fmt::emphasis::underline));
+    } else {
+        fmt::print("{}\n{}\n",
+                    app, vault);
+    }
+}
+
 
 void CLI_Visualizer::list_applications(Storage *s) {
     if(pr) {

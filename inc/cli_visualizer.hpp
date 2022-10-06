@@ -45,6 +45,8 @@ public:
     void print_info_vault(Vault *x);
     void print_info_trace(Trace *t);
 
+    void print_current_state(std::string app, std::string vault);
+
     void list_applications(Storage *s);
     void list_vaults(Project *p);
     void list_experiments(Vault *x);

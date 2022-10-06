@@ -324,8 +324,12 @@ void sel_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
         return;
     }
 
+    std::string state_app, state_vault;
+
     SUBJECT_SWITCH
-        // Seleccionar un storage no te sentit de moment
+        // Mostrem el que tenim seleccionat
+        read_global_state(&state_app, &state_vault);
+        cli->print_current_state(state_app, state_vault);
     
     SUBJECT_SWITCH_APP
         set_global_state_app(oh[s]);
