@@ -22,3 +22,4 @@ install(TARGETS Paraordenar RUNTIME DESTINATION bin)
 install(FILES "../inc/cli_visualizer.hpp" "../inc/CLI11.hpp" "../inc/pro_defines.hpp"
   DESTINATION include
   )
+install(FILES "../extra/bash-completions.sh" DESTINATION etc/bash_completion.d/ RENAME "paraordenar-completion.bash")

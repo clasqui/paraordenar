@@ -27,6 +27,8 @@
 //Libraries
 #include "CLI11.hpp"
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
 
 // project includes
 #include "storage.hpp"
@@ -64,6 +66,7 @@ void add_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void obr_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void rem_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
 void sin_command(CLI::App *comm, object_t s, std::vector<std::string> oh);
+void auto_command(CLI::App *comm);
 
 void read_global_state(std::string *, std::string *);
 void set_global_state_app(std::string);
@@ -139,8 +142,13 @@ int main(int argc, char **argv)
     ->alias("sel")->fallthrough();
     sel->add_flag("-d", "Descarta l'entorn actual.");
 
-    app.require_subcommand(1);  // 1 subcomanda requerida
 
+    // Internals
+    CLI::App *_autocomplete = app.add_subcommand("_completion");
+    _autocomplete->add_option("ncurs");
+    // _autocomplete->add_option("params"); Obtain by cin
+
+    app.require_subcommand(1);  // 1 subcomanda requerida
 
 
     try {
@@ -172,6 +180,8 @@ int main(int argc, char **argv)
 
     for(auto subcom : app.get_subcommands()) {
         std::string nom = subcom->get_name();
+        
+        if(nom == "_completion") auto_command(subcom);
         if(nom == "selecciona") sel_command(subcom, subject, objectHierarchy);
         if(nom == "llista") ls_command(subcom, subject, objectHierarchy);
         if(nom == "crea") crea_command(subcom, subject, objectHierarchy);
@@ -952,6 +962,79 @@ void inf_command(CLI::App *comm, object_t s, std::vector<std::string> oh) {
     SUBJECT_SWITCH_FIN
 }
 
+
+void auto_command(CLI::App *comm) {
+    Project * p;
+    Vault *x;
+    boost::gregorian::date di;
+    Trace *t;
+    int ncursor = comm->get_option("ncurs")->as<int>();
+    //std::string parameters = *(comm->get_option("params")->results().begin());
+    std::string parameters;
+    object_t s;
+    std::vector<std::string> params_list, oh;
+    oh.push_back("");
+
+    std::getline(std::cin, parameters);
+    // Parsing manual del que ens arriba: tots els parametres sense lexecutable
+    boost::split(params_list, parameters, boost::is_any_of(" "));
+    for (size_t i = 0; i < params_list.size(); i++)
+    {
+        std::string opt = params_list[i];
+        if (opt == "-a")
+        {
+            if(ncursor-1 == i+1) {
+                // Jerarquia que estem suggerint
+                s = TApplication;
+                break;
+            } else {
+                // aquesta la guardem
+                oh.push_back(params_list[i+1]);
+            }
+            i++;
+        }
+        if (opt == "-x")
+        {
+            if(ncursor-1 == i+1) {
+                // Jerarquia que estem suggerint
+                s = TVault;
+                break;
+            } else {
+                // aquesta la guardem
+                oh.push_back(params_list[i+1]);
+            }
+            i++;
+        }
+        if (opt == "-t")
+        {
+            if(ncursor-1 == i+1) {
+                // Jerarquia que estem suggerint
+                s = TTrace;
+                break;
+            } else {
+                // aquesta la guardem
+                oh.push_back(params_list[i+1]);
+            }
+            i++;
+        }
+        s = TStorage;
+    }
+    
+    SUBJECT_SWITCH
+    // Aquest cas es dona quan no hi ha cap situacio en la que sigui un recurs. Per tant podriem suggerir tant comandes com flags.
+
+    SUBJECT_SWITCH_APP
+        cli->list_applications(mstr);
+    SUBJECT_SWITCH_VAULT
+        LOAD_PROJECT_MACRO(p)
+        cli->list_vaults(p);
+    SUBJECT_SWITCH_TRACE
+        LOAD_VAULT_MACRO(x)
+        cli->list_experiments(x);
+    SUBJECT_SWITCH_FIN
+
+
+}
 
 //@}
 
