@@ -81,10 +81,11 @@ int main(int argc, char **argv)
     /* 7 command-line parsing */
 
     CLI::App app{"ParaOrdenar - Eina d'emmagatzematge i gestió de traces Paraver"};
-    app.set_version_flag("--version", std::string(Paraordenar_VERSION_MAJOR+"."+Paraordenar_VERSION_MINOR), "Mostra la informació de versió i acaba.");
+    app.set_version_flag("--version", "pro v" Paraordenar_VERSION_MAJOR "." Paraordenar_VERSION_MINOR, "Mostra la informació de versió i acaba.");
     app.set_help_all_flag("--help-all", "Mostra l'ajuda completa");
 
-    app.add_flag("-r,--raw", "Imprimeix els resultats sense decorar el text");
+    bool raw_output{false};
+    app.add_flag("-r,--raw", raw_output, "Imprimeix els resultats sense decorar el text");
 
     
     app.add_option("-a", "Aplicació");
@@ -96,7 +97,8 @@ int main(int argc, char **argv)
     CLI::App *crea = app.add_subcommand("crea", "Crea un emmagatzematge nou, aplicació, caixa, o traça")
     ->alias("cre")->fallthrough();
     crea->add_option("description", "Descripcio del nou objecte creat. S'ignora si es crea un nou emmagatzematge.");
-    crea->add_flag("-s,--set", "Selecciona el nou objecte creat per l'entorn");
+    bool set_env_on_create{false};
+    crea->add_flag("-s,--set", set_env_on_create, "Selecciona el nou objecte creat per l'entorn");
 
     CLI::App *llista = app.add_subcommand("llista", "Llista els elements de l'emmagatzematge, una aplicacio o caixa")
     ->alias("lli")->fallthrough();
@@ -111,7 +113,8 @@ int main(int argc, char **argv)
 
     CLI::App *eli = app.add_subcommand("elimina", "Elimina una aplicació, caixa o traça")
     ->alias("eli")->fallthrough();
-    eli->add_flag("-f,--fitxers", "Elimina dels arxius del sistema de fitxers també");
+    bool remove_files_fs_object{false};
+    eli->add_flag("-f,--fitxers", remove_files_fs_object, "Elimina dels arxius del sistema de fitxers també");
 
     // Modul treball amb traces
     CLI::App *add = app.add_subcommand("afegeix", "Afegeix un recurs a un experiment")
@@ -124,7 +127,8 @@ int main(int argc, char **argv)
     CLI::App *rem = app.add_subcommand("treu", "Treu un recurs a un experiment")
     ->alias("rem")->fallthrough();
     rem->add_option("arxiu", "Nom del recurs a treure")->required();
-    rem->add_flag("-f,--fitxers", "Elimina dels arxius del sistema de fitxers també");
+    bool remove_files_fs_resource{false};
+    rem->add_flag("-f,--fitxers", remove_files_fs_resource, "Elimina dels arxius del sistema de fitxers també");
 
     CLI::App *obr = app.add_subcommand("obre", "Obre les traces d'un experiment amb Paraver")
     ->alias("obr")->fallthrough();
@@ -140,7 +144,8 @@ int main(int argc, char **argv)
     // Estat
     CLI::App *sel = app.add_subcommand("selecciona", "Sel·lecciona l'objecte per establir com a entorn")
     ->alias("sel")->fallthrough();
-    sel->add_flag("-d", "Descarta l'entorn actual.");
+    bool discard_current_env{false};
+    sel->add_flag("-d", discard_current_env, "Descarta l'entorn actual.");
 
 
     // Internals

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # set the project name and version
-project(Paraordenar VERSION 0.1)
+project(Paraordenar VERSION 0.2)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 

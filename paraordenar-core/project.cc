@@ -110,7 +110,7 @@ void Project::writeProjectDefinition() {
     pugi::xml_node config_version = root.append_child("param");
     config_version.append_attribute("name") = "versio";
     config_version.append_attribute("type") = "string";
-    config_version.append_attribute("value") = Paraordenar_VERSION_MAJOR+"."+Paraordenar_VERSION_MINOR;
+    config_version.append_attribute("value") = Paraordenar_VERSION_MAJOR "." Paraordenar_VERSION_MINOR;
 
     pugi::xml_node info = root.append_child("info");
     
